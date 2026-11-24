@@ -1,0 +1,3435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>AIMS English — IELTS Partial Test Booking</title>
+  <link rel="preconnect" href="https://script.google.com" crossorigin />
+  <link rel="preconnect" href="https://script.googleusercontent.com" crossorigin />
+  <!-- Optional SheetJS for Multi-Sheet .xlsx Export (graceful CSV fallback built-in if offline) #Monsur -->
+  <script defer src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: #e2e8f0;
+      color: #1e293b;
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
+      min-height: 100vh;
+    }
+    body {
+      display: flex;
+      justify-content: center;
+      padding: 0;
+    }
+    @media (min-width: 640px) {
+      body { padding: 20px 16px; }
+    }
+
+    /* App Shell #Monsur*/
+    #app-shell {
+      width: 100%;
+      max-width: 448px;
+      background-color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      box-shadow: 0 14px 44px -12px rgba(7, 20, 25, 0.22);
+    }
+    @media (min-width: 640px) {
+      #app-shell {
+        min-height: 840px;
+        max-height: 920px;
+        border-radius: 32px;
+      }
+    }
+
+    /* Header */
+    .app-header {
+      background-color: #071419;
+      color: #ffffff;
+      padding: 14px 16px 12px;
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+      border-bottom: 1px solid rgba(19, 78, 74, 0.6);
+    }
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .brand-slot {
+      display: flex;
+      align-items: center;
+      min-width: 0;
+    }
+    .brand-logo-img {
+      height: 40px;
+      width: auto;
+      max-width: 180px;
+      object-fit: contain;
+      border-radius: 8px;
+      display: block;
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .sync-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 9999px;
+      display: inline-block;
+    }
+    .dot-emerald { background-color: #34d399; }
+    .dot-amber { background-color: #fbbf24; }
+    .dot-slate { background-color: #94a3b8; }
+
+    .btn-icon {
+      padding: 8px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: #ffffff;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+    }
+    .btn-icon:hover { background: rgba(255, 255, 255, 0.2); }
+
+    .header-subbar {
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+    }
+    .subbar-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #99f6e4;
+      font-weight: 500;
+    }
+    .subbar-gold {
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 10px;
+      color: #DDA73C;
+      font-weight: 700;
+    }
+    .mode-badge-student {
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: rgba(10, 108, 130, 0.45);
+      color: #ccfbf1;
+      font-weight: 600;
+    }
+    .mode-badge-admin {
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: rgba(221, 167, 60, 0.25);
+      color: #DDA73C;
+      font-weight: 700;
+    }
+
+    /* Main Scroll Area */
+    #main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 16px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Cards & Layout Helpers */
+    .card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .card-dark {
+      background: #071419;
+      color: #ffffff;
+      border-radius: 16px;
+      padding: 16px;
+      border: 1px solid rgba(19, 78, 74, 0.6);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .section-kicker {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #64748b;
+    }
+    .helper-text {
+      font-size: 11px;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .field-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #475569;
+    }
+    .input, .select {
+      width: 100%;
+      background-color: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #0f172a;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .input:focus, .select:focus {
+      border-color: #0A6C82;
+      box-shadow: 0 0 0 3px rgba(10, 108, 130, 0.18);
+      background-color: #ffffff;
+    }
+    .select {
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .input-sm, .select-sm {
+      background-color: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #0f172a;
+      font-family: inherit;
+      outline: none;
+      width: 100%;
+    }
+
+    /* Buttons */
+    .btn {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: opacity 0.15s, transform 0.1s, background 0.15s;
+    }
+    .btn:active { transform: scale(0.99); }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-full { width: 100%; }
+    .btn-teal { background-color: #0A6C82; color: #ffffff; box-shadow: 0 4px 12px rgba(10, 108, 130, 0.25); }
+    .btn-teal:hover { opacity: 0.94; }
+    .btn-dark { background-color: #071419; color: #ffffff; }
+    .btn-dark:hover { background-color: #0f172a; }
+    .btn-emerald { background-color: #059669; color: #ffffff; }
+    .btn-emerald:hover { background-color: #047857; }
+    .btn-rose { background-color: #e11d48; color: #ffffff; }
+    .btn-rose:hover { background-color: #be123c; }
+    .btn-sm { padding: 7px 12px; font-size: 12px; border-radius: 10px; }
+    .btn-xs { padding: 5px 10px; font-size: 11px; border-radius: 8px; }
+
+    /* Student Top Nav Strip */
+    .student-top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: #ffffff;
+      padding: 6px;
+      border-radius: 14px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    }
+    .student-nav-pill {
+      border: none;
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+    .student-nav-pill.active {
+      background: #0A6C82;
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(10, 108, 130, 0.25);
+    }
+    .student-nav-pill.inactive {
+      background: #f1f5f9;
+      color: #334155;
+    }
+    .student-nav-pill.inactive:hover {
+      background: #e2e8f0;
+    }
+
+    /* Quota Preview Box #Monsur*/
+    .quota-box {
+      margin-top: 8px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .quota-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+    }
+    .quota-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+    .quota-cell {
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      background: #ffffff;
+      padding: 6px 4px;
+      text-align: center;
+    }
+    .quota-cell.warn { background: #fffbeb; border-color: #fde68a; color: #b45309; }
+    .quota-cell.zero { background: #fff1f2; border-color: #fecdd3; color: #be123c; }
+
+    /* Module Cards & Slot Buttons */
+    .module-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .module-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .module-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .mod-Speaking .module-icon { background: #f5f3ff; color: #7c3aed; border-color: #ddd6fe; }
+    .mod-Reading .module-icon { background: #ecfdf5; color: #059669; border-color: #a7f3d0; }
+    .mod-Listening .module-icon { background: #f0f9ff; color: #0284c7; border-color: #bae6fd; }
+    .mod-Writing .module-icon { background: #fffbeb; color: #d97706; border-color: #fde68a; }
+
+    .slot-btn {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      text-align: left;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+    .slot-btn:hover { border-color: #94a3b8; }
+    .slot-btn.full {
+      background: #f1f5f9;
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+    .slot-btn.picked-Speaking { border-color: #8b5cf6; background: #f5f3ff; box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2); }
+    .slot-btn.picked-Reading { border-color: #10b981; background: #ecfdf5; box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2); }
+    .slot-btn.picked-Listening { border-color: #0ea5e9; background: #f0f9ff; box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2); }
+    .slot-btn.picked-Writing { border-color: #f59e0b; background: #fffbeb; box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2); }
+
+    .seat-pill {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      background: #f1f5f9;
+      color: #475569;
+    }
+    .seat-pill.picked { background: #071419; color: #ffffff; }
+    .seat-pill.full { background: #ffe4e6; color: #be123c; }
+
+    /* Management Tabs & Grids #Monsur*/
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .kpi-box {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      padding: 10px;
+    }
+    .tab-bar {
+      background: #ffffff;
+      padding: 6px;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 3px;
+    }
+    .tab-btn {
+      border: none;
+      background: transparent;
+      padding: 8px 4px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #475569;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .tab-btn.active {
+      background: #0A6C82;
+      color: #ffffff;
+    }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .grid-3 { display: grid; grid-template-columns: 2fr 1fr; gap: 8px; }
+    .flex-between { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .flex-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    .list-item {
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .chip-batch {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      font-size: 12px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+    .chip-toggle {
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      color: #94a3b8;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .chip-toggle.on {
+      background: #0A6C82;
+      color: #ffffff;
+      border-color: #0A6C82;
+    }
+
+    /* Footer */
+    .app-footer {
+      background: #f1f5f9;
+      border-top: 1px solid #e2e8f0;
+      padding: 12px 16px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .footer-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 700;
+      background: #ffffff;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+      cursor: pointer;
+      font-family: inherit;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+    }
+    .footer-btn.in-admin {
+      background: #071419;
+      color: #ffffff;
+      border-color: #071419;
+    }
+    .copyright {
+      font-size: 11px;
+      color: #94a3b8;
+      font-weight: 500;
+    }
+
+    /* Center-Screen Notification Overlay & Modal */
+    #toast-container {
+      pointer-events: none;
+      position: fixed;
+      inset: 0;
+      z-index: 70;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      gap: 10px;
+    }
+    @keyframes popCenter {
+      0% { opacity: 0; transform: scale(0.9); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    .toast {
+      pointer-events: auto;
+      padding: 16px 20px;
+      border-radius: 18px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.45;
+      color: #ffffff;
+      box-shadow: 0 20px 45px rgba(7, 20, 25, 0.38);
+      max-width: 340px;
+      width: 100%;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      animation: popCenter 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .toast-badge {
+      font-size: 20px;
+      line-height: 1;
+    }
+    .toast-success { background: #071419; border: 2px solid #10b981; }
+    .toast-error { background: #9f1239; border: 2px solid #fda4af; }
+    .toast-info { background: #0A6C82; border: 2px solid #5eead4; }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      background: rgba(15, 23, 42, 0.58);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-backdrop.hidden { display: none; }
+    .modal-card {
+      background: #ffffff;
+      border-radius: 18px;
+      width: 100%;
+      max-width: 320px;
+      padding: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+    }
+
+    /* SVG & Animations */
+    svg { width: 16px; height: 16px; flex-shrink: 0; }
+    @keyframes spinSlow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .animate-spin-fast { animation: spinSlow 0.75s linear infinite; }
+  </style>
+</head>
+<body>
+
+  <!-- Mobile App Shell -->
+  <div id="app-shell">
+
+    <!-- Top Brand Header -->
+    <header class="app-header">
+      <div class="header-top">
+        <div id="brand-logo-slot" class="brand-slot"></div>
+
+        <div class="header-actions">
+          <div id="sync-pill" class="sync-pill">
+            <span id="sync-dot" class="dot dot-emerald"></span>
+            <span id="sync-text">Live Sync</span>
+          </div>
+
+          <button
+            type="button"
+            onclick="handleManualSync()"
+            title="Refresh Live Data"
+            class="btn-icon"
+          >
+            <svg id="sync-icon" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Week & Portal Bar -->
+      <div class="header-subbar">
+        <div class="subbar-left">
+          <span class="subbar-gold">IELTS Partial Test</span>
+          <span>•</span>
+          <span id="header-week-label" style="color:#fff;font-weight:600;">Current Week</span>
+        </div>
+        <span id="header-mode-tag" class="mode-badge-student">Student Portal</span>
+      </div>
+    </header>
+
+    <!-- Scrollable Main Area -->
+    <main id="main-content"></main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div>
+        <button
+          id="footer-portal-btn"
+          type="button"
+          onclick="handleFooterPortalClick()"
+          class="footer-btn"
+        >
+          🔒 Teacher / Management Portal
+        </button>
+      </div>
+      <p class="copyright">© M Monsur Islam</p>
+    </footer>
+
+    <!-- Center-Screen Notification Container -->
+    <div id="toast-container"></div>
+
+    <!-- Custom Confirm Modal #Monsur-->
+    <div id="confirm-modal" class="modal-backdrop hidden">
+      <div class="modal-card">
+        <h3 id="modal-title" style="font-size:14px;font-weight:700;color:#0f172a;">Confirm Action</h3>
+        <p id="modal-message" style="font-size:12px;color:#64748b;margin-top:6px;line-height:1.5;">Are you sure?</p>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;">
+          <button
+            id="modal-cancel-btn"
+            type="button"
+            class="btn btn-sm"
+            style="background:#f1f5f9;color:#475569;"
+          >
+            Cancel
+          </button>
+          <button
+            id="modal-confirm-btn"
+            type="button"
+            class="btn btn-sm btn-rose"
+          >
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    /*************************************************************************
+     * 1. CONFIGURATION & DEFAULTS (FIXED 4 PER MODULE / 16 TOTAL + 1/WEEK)
+     *************************************************************************/
+    const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbytDKacdwD02spqX6U-X46yqZFeSb1SeKH0o7f6NNWEL9T694qz_PkyJHLN1K6acgE/exec';
+    const DEFAULT_LOGO_PATH = 'https://lh3.googleusercontent.com/d/1CT0IGBYQjnHEg_Xl_Sg97bOB2kwWkQNw';
+
+    const STORAGE_URL_KEY = 'aims_up_script_url_v5';
+    const STORAGE_DEMO_KEY = 'aims_up_demo_data_v5';
+    const STORAGE_LIVE_CACHE_KEY = 'aims_up_live_cache_v5';
+    const STORAGE_PW_KEY = 'aims_up_local_pw_v5';
+    const STORAGE_LOGO_KEY = 'aims_up_custom_logo_v5';
+    const STORAGE_STUDENT_SESSION_KEY = 'aims_up_student_session_v5';
+
+    const ALL_MODULE_KEYS = ['Speaking', 'Reading', 'Listening', 'Writing'];
+    const DEFAULT_BATCHES = ['198', '199', '203', '204', '207', '208', '209', '210', 'APU', 'ASB'];
+    const MAX_PER_MODULE = 4;
+    const MAX_TOTAL_MODULES = 16;
+    const DAYS_OF_WEEK = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const DEFAULT_BOOKING_WINDOW = {
+      enabled: true,
+      startDate: '2026-11-22',
+      startTime: '15:00',
+      endDate: '2026-11-22',
+      endTime: '23:00'
+    };
+
+    const MODULE_META = {
+      Speaking: {
+        subtitle: '20-min individual slot (max 2 students/slot)',
+        icon: `<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>`
+      },
+      Reading: {
+        subtitle: 'Group partial session (15 seats)',
+        icon: `<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>`
+      },
+      Listening: {
+        subtitle: 'Group partial session (15 seats)',
+        icon: `<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 18v-6a9 9 0 0118 0v6"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3zM3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z"/></svg>`
+      },
+      Writing: {
+        subtitle: 'Group partial session (15 seats)',
+        icon: `<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>`
+      }
+    };
+
+    const DEFAULT_SLOTS = [
+      { id: 'SP-MON-1', module: 'Speaking', day: 'Monday', time: '3:00 PM – 3:20 PM', capacity: 2, active: true },
+      { id: 'SP-MON-2', module: 'Speaking', day: 'Monday', time: '3:20 PM – 3:40 PM', capacity: 2, active: true },
+      { id: 'SP-MON-3', module: 'Speaking', day: 'Monday', time: '3:40 PM – 4:00 PM', capacity: 2, active: true },
+      { id: 'SP-TUE-1', module: 'Speaking', day: 'Tuesday', time: '10:30 AM – 10:50 AM', capacity: 2, active: true },
+      { id: 'SP-TUE-2', module: 'Speaking', day: 'Tuesday', time: '10:50 AM – 11:10 AM', capacity: 2, active: true },
+      { id: 'SP-TUE-3', module: 'Speaking', day: 'Tuesday', time: '11:10 AM – 11:30 AM', capacity: 2, active: true },
+      { id: 'SP-TUE-4', module: 'Speaking', day: 'Tuesday', time: '11:30 AM – 11:50 AM', capacity: 2, active: true },
+      { id: 'SP-TUE-5', module: 'Speaking', day: 'Tuesday', time: '11:50 AM – 12:10 PM', capacity: 2, active: true },
+      { id: 'SP-TUE-6', module: 'Speaking', day: 'Tuesday', time: '12:10 PM – 12:30 PM', capacity: 2, active: true },
+      { id: 'SP-TUE-7', module: 'Speaking', day: 'Tuesday', time: '12:30 PM – 12:50 PM', capacity: 2, active: true },
+      { id: 'RD-TUE-1', module: 'Reading', day: 'Tuesday', time: '12:30 PM', capacity: 15, active: true },
+      { id: 'LS-TUE-1', module: 'Listening', day: 'Tuesday', time: '2:40 PM', capacity: 15, active: true },
+      { id: 'WR-TUE-1', module: 'Writing', day: 'Tuesday', time: '4:00 PM', capacity: 15, active: true }
+    ];
+
+    /*************************************************************************
+     * 2. HELPERS & NORMALIZATION
+     *************************************************************************/
+    function escapeHtml(str) {
+      return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function normalizeMobileKey(raw) {
+      const digits = String(raw || '').replace(/\D/g, '');
+      if (!digits) return '';
+      return digits.length >= 11 ? digits.slice(-11) : digits;
+    }
+
+    function computeMobileQuotaMap(archiveList = [], bookingList = []) {
+      const map = {};
+      const record = (item) => {
+        const key = normalizeMobileKey(item.mobileNumber);
+        if (!key) return;
+        if (!map[key]) {
+          map[key] = {
+            mobileKey: key,
+            mobileDisplay: String(item.mobileNumber || '').trim(),
+            studentName: String(item.studentName || '').trim(),
+            batch: String(item.batch || '').trim(),
+            Speaking: 0,
+            Reading: 0,
+            Listening: 0,
+            Writing: 0,
+            totalUsed: 0
+          };
+        }
+        if (item.studentName) map[key].studentName = String(item.studentName).trim();
+        if (item.batch) map[key].batch = String(item.batch).trim();
+        if (ALL_MODULE_KEYS.includes(item.module)) {
+          map[key][item.module] += 1;
+          map[key].totalUsed += 1;
+        }
+      };
+      archiveList.forEach(record);
+      bookingList.forEach(record);
+      return map;
+    }
+
+    function hasBookedThisWeek(mobileRaw) {
+      const key = normalizeMobileKey(mobileRaw);
+      if (!key) return false;
+      return appState.bookings.some(b => normalizeMobileKey(b.mobileNumber) === key);
+    }
+
+    function getStudentMobileUsage(mobileRaw) {
+      const key = normalizeMobileKey(mobileRaw);
+      const map = computeMobileQuotaMap(appState.archive, appState.bookings);
+      return map[key] || {
+        mobileKey: key,
+        Speaking: 0,
+        Reading: 0,
+        Listening: 0,
+        Writing: 0,
+        totalUsed: 0
+      };
+    }
+
+    function normalizeDriveImageUrl(rawUrl) {
+      const url = String(rawUrl || '').trim();
+      if (!url) return '';
+      const fileMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+      if (fileMatch && fileMatch[1]) {
+        return `https://lh3.googleusercontent.com/d/${fileMatch[1]}`;
+      }
+      const idMatch = url.match(/drive\.google\.com\/(?:open|uc)\?[^#]*id=([a-zA-Z0-9_-]+)/);
+      if (idMatch && idMatch[1]) {
+        return `https://lh3.googleusercontent.com/d/${idMatch[1]}`;
+      }
+      return url;
+    }
+
+    function buildDefaultModuleBatches(batches) {
+      const list = Array.isArray(batches) ? [...batches] : [...DEFAULT_BATCHES];
+      return {
+        Speaking: [...list],
+        Reading: [...list],
+        Listening: [...list],
+        Writing: [...list]
+      };
+    }
+
+    function normalizeModuleBatches(rawObj, validBatches) {
+      const base = buildDefaultModuleBatches(validBatches);
+      if (!rawObj || typeof rawObj !== 'object') return base;
+      const result = {};
+      ALL_MODULE_KEYS.forEach(mod => {
+        if (Array.isArray(rawObj[mod])) {
+          result[mod] = rawObj[mod].map(String).filter(b => validBatches.includes(b));
+        } else {
+          result[mod] = [...validBatches];
+        }
+      });
+      return result;
+    }
+
+    function normalizeBookingWindow(raw) {
+      if (!raw || typeof raw !== 'object') return { ...DEFAULT_BOOKING_WINDOW };
+      const startDate = /^\d{4}-\d{2}-\d{2}$/.test(String(raw.startDate || ''))
+        ? String(raw.startDate)
+        : DEFAULT_BOOKING_WINDOW.startDate;
+      const endDate = /^\d{4}-\d{2}-\d{2}$/.test(String(raw.endDate || ''))
+        ? String(raw.endDate)
+        : startDate;
+      return {
+        enabled: raw.enabled === undefined ? true : Boolean(raw.enabled),
+        startDate,
+        startTime: /^\d{2}:\d{2}$/.test(String(raw.startTime || '')) ? String(raw.startTime) : DEFAULT_BOOKING_WINDOW.startTime,
+        endDate,
+        endTime: /^\d{2}:\d{2}$/.test(String(raw.endTime || '')) ? String(raw.endTime) : DEFAULT_BOOKING_WINDOW.endTime
+      };
+    }
+
+    function format24To12(hhmm) {
+      const [hStr, mStr] = String(hhmm || '15:00').split(':');
+      let h = parseInt(hStr, 10);
+      const m = String(mStr || '00').padStart(2, '0');
+      if (isNaN(h)) return hhmm;
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      h = h % 12;
+      if (h === 0) h = 12;
+      return `${h}:${m} ${ampm}`;
+    }
+
+    function formatDateWithDay(isoDate) {
+      const [y, m, d] = String(isoDate || '').split('-').map(Number);
+      if (!y || !m || !d) return isoDate || '';
+      const dt = new Date(y, m - 1, d);
+      const dayName = DAYS_OF_WEEK[dt.getDay()];
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return `${dayName}, ${monthNames[m - 1]} ${d}, ${y}`;
+    }
+
+    function parseLocalDateTime(isoDate, hhmm) {
+      const [y, m, d] = String(isoDate || '').split('-').map(Number);
+      const [hh, mm] = String(hhmm || '00:00').split(':').map(Number);
+      if (!y || !m || !d) return null;
+      return new Date(y, m - 1, d, hh || 0, mm || 0, 0, 0);
+    }
+
+    function getBookingWindowStatus(win = appState.bookingWindow) {
+      const cfg = normalizeBookingWindow(win);
+      const startStr = `${formatDateWithDay(cfg.startDate)} (${format24To12(cfg.startTime)})`;
+      const endStr = cfg.startDate === cfg.endDate
+        ? format24To12(cfg.endTime)
+        : `${formatDateWithDay(cfg.endDate)} (${format24To12(cfg.endTime)})`;
+      const label = `${startStr} – ${endStr}`;
+      if (!cfg.enabled) {
+        return { isOpen: true, enabled: false, label, startStr, endStr };
+      }
+      const startDt = parseLocalDateTime(cfg.startDate, cfg.startTime);
+      const endDt = parseLocalDateTime(cfg.endDate, cfg.endTime);
+      if (!startDt || !endDt) {
+        return { isOpen: false, enabled: true, label, startStr, endStr };
+      }
+      const now = new Date();
+      const isOpen = now.getTime() >= startDt.getTime() && now.getTime() <= endDt.getTime();
+      return { isOpen, enabled: true, label, startStr, endStr };
+    }
+
+    function formatClockStr(raw) {
+      const s = String(raw || '').trim();
+      if (/1899-12-30/.test(s) || /T\d{2}:\d{2}/.test(s)) {
+        const d = new Date(s);
+        if (!isNaN(d.getTime())) {
+          let h = d.getHours();
+          const m = String(d.getMinutes()).padStart(2, '0');
+          const ampm = h >= 12 ? 'PM' : 'AM';
+          h = h % 12 || 12;
+          return `${h}:${m} ${ampm}`;
+        }
+      }
+      return s;
+    }
+
+    function formatTimestampShort(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return String(iso);
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    function loadScriptUrl() {
+      try {
+        const saved = localStorage.getItem(STORAGE_URL_KEY);
+        if (saved && saved.trim()) return saved.trim();
+      } catch (e) {}
+      return DEFAULT_SCRIPT_URL;
+    }
+
+    function getLocalPassword() {
+      try {
+        return localStorage.getItem(STORAGE_PW_KEY) || 'admin2026';
+      } catch (e) {
+        return 'admin2026';
+      }
+    }
+
+    function getCustomLogo() {
+      try {
+        return normalizeDriveImageUrl(localStorage.getItem(STORAGE_LOGO_KEY) || '');
+      } catch (e) {
+        return '';
+      }
+    }
+
+    function loadLocalDemoData() {
+      try {
+        const raw = localStorage.getItem(STORAGE_DEMO_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed.slots) && Array.isArray(parsed.batches)) {
+            const batches = parsed.batches;
+            return {
+              weekLabel: parsed.weekLabel || 'Current Week',
+              slots: parsed.slots,
+              batches,
+              bookings: Array.isArray(parsed.bookings) ? parsed.bookings : [],
+              archive: Array.isArray(parsed.archive) ? parsed.archive : [],
+              accounts: Array.isArray(parsed.accounts) ? parsed.accounts : [],
+              moduleBatches: normalizeModuleBatches(parsed.moduleBatches, batches),
+              bookingWindow: normalizeBookingWindow(parsed.bookingWindow)
+            };
+          }
+        }
+      } catch (e) {}
+      const init = {
+        weekLabel: 'Current Week',
+        slots: DEFAULT_SLOTS.map(s => ({ ...s })),
+        batches: [...DEFAULT_BATCHES],
+        bookings: [],
+        archive: [],
+        accounts: [],
+        moduleBatches: buildDefaultModuleBatches(DEFAULT_BATCHES),
+        bookingWindow: { ...DEFAULT_BOOKING_WINDOW }
+      };
+      saveLocalDemoData(init);
+      return init;
+    }
+
+    function saveLocalDemoData(data) {
+      try {
+        localStorage.setItem(STORAGE_DEMO_KEY, JSON.stringify(data));
+      } catch (e) {}
+    }
+
+    function saveLiveSnapshotCache(data) {
+      try {
+        const safeSnapshot = {
+          weekLabel: data.weekLabel || 'Current Week',
+          slots: data.slots || [],
+          batches: data.batches || [],
+          bookings: data.bookings || [],
+          archive: data.archive || [],
+          moduleBatches: data.moduleBatches || null,
+          bookingWindow: data.bookingWindow || null
+        };
+        localStorage.setItem(STORAGE_LIVE_CACHE_KEY, JSON.stringify(safeSnapshot));
+      } catch (e) {}
+    }
+
+    function loadLiveSnapshotCache() {
+      try {
+        const raw = localStorage.getItem(STORAGE_LIVE_CACHE_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (parsed && Array.isArray(parsed.slots) && Array.isArray(parsed.batches)) {
+          return parsed;
+        }
+      } catch (e) {}
+      return null;
+    }
+
+    function loadSavedStudentSession() {
+      try {
+        const raw = localStorage.getItem(STORAGE_STUDENT_SESSION_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.username && parsed.mobileNumber && parsed.batch) {
+          return parsed;
+        }
+      } catch (e) {}
+      return null;
+    }
+
+    function saveStudentSession(acc) {
+      try {
+        if (!acc) localStorage.removeItem(STORAGE_STUDENT_SESSION_KEY);
+        else localStorage.setItem(STORAGE_STUDENT_SESSION_KEY, JSON.stringify(acc));
+      } catch (e) {}
+    }
+
+    /*************************************************************************
+     * 3. APPLICATION STATE
+     *************************************************************************/
+    const savedStudent = loadSavedStudentSession();
+
+    const appState = {
+      scriptUrl: loadScriptUrl(),
+      isLiveConnected: false,
+      isSyncing: false,
+      isSubmitting: false,
+      isAuthSubmitting: false,
+
+      weekLabel: 'Current Week',
+      slots: [],
+      batches: [],
+      bookings: [],
+      archive: [],
+      accounts: [],
+      moduleBatches: buildDefaultModuleBatches(DEFAULT_BATCHES),
+      bookingWindow: { ...DEFAULT_BOOKING_WINDOW },
+
+      // Student Account & View State
+      view: 'student',
+      studentTab: 'book', // 'book' | 'history'
+      authMode: 'login',
+      loggedInAccount: savedStudent,
+      studentName: savedStudent ? savedStudent.fullName : '',
+      mobileNumber: savedStudent ? savedStudent.mobileNumber : '',
+      selectedBatch: savedStudent ? savedStudent.batch : '',
+      selectedByModule: {
+        Speaking: null,
+        Reading: null,
+        Listening: null,
+        Writing: null
+      },
+
+      // Management View State
+      adminAuthenticated: false,
+      adminPasswordInSession: '',
+      adminTab: 'roster',
+      rosterModuleFilter: 'All',
+      rosterSearch: '',
+      accountSearch: '',
+      approvalBatchFilter: 'All',
+      newBatchInput: '',
+      newWeekInput: '',
+      draftSlots: [],
+      draftBatches: [],
+      draftModuleBatches: buildDefaultModuleBatches(DEFAULT_BATCHES)
+    };
+
+    let pendingConfirmFn = null;
+
+    function isLiveMode() {
+      return Boolean(appState.scriptUrl && appState.scriptUrl.trim().startsWith('http'));
+    }
+
+    /*************************************************************************
+     * 4. GOOGLE SHEETS SYNC API (WITH INSTANT LOCAL-FIRST HYDRATION)
+     *************************************************************************/
+    async function apiGetData() {
+      const url = appState.scriptUrl.trim();
+      const sep = url.includes('?') ? '&' : '?';
+      let query = `${url}${sep}action=getData`;
+      if (appState.adminAuthenticated && appState.adminPasswordInSession) {
+        query += `&password=${encodeURIComponent(appState.adminPasswordInSession)}`;
+      }
+      const res = await fetch(query, { method: 'GET', redirect: 'follow' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+      if (!json || !json.ok) throw new Error((json && json.error) || 'Failed to read sheet');
+      return json;
+    }
+
+    async function apiPost(payload) {
+      const res = await fetch(appState.scriptUrl.trim(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        redirect: 'follow',
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+      if (!json || !json.ok) throw new Error((json && json.error) || 'Request rejected');
+      return json;
+    }
+
+    function applyServerPayload(data, { cacheLive = false } = {}) {
+      appState.weekLabel = data.weekLabel || 'Current Week';
+      appState.slots = (data.slots || []).map(s => ({
+        id: String(s.id),
+        module: String(s.module),
+        day: String(s.day),
+        time: formatClockStr(s.time),
+        capacity: Number(s.capacity) || 1,
+        active: Boolean(s.active)
+      }));
+      appState.batches = (data.batches || []).map(String);
+      appState.bookings = (data.bookings || []).map(b => ({
+        ...b,
+        time: formatClockStr(b.time),
+        mobileNumber: String(b.mobileNumber || '').trim()
+      }));
+      appState.archive = (data.archive || []).map(a => ({
+        ...a,
+        time: formatClockStr(a.time),
+        mobileNumber: String(a.mobileNumber || '').trim()
+      }));
+      if (Array.isArray(data.accounts)) {
+        appState.accounts = data.accounts.map(ac => ({
+          accountId: String(ac.accountId || ''),
+          fullName: String(ac.fullName || '').trim(),
+          username: String(ac.username || '').trim(),
+          password: String(ac.password || '').trim(),
+          mobileNumber: String(ac.mobileNumber || '').trim(),
+          batch: String(ac.batch || '').trim(),
+          createdAt: String(ac.createdAt || ''),
+          status: String(ac.status || '').trim() || 'Approved'
+        }));
+      }
+      appState.moduleBatches = normalizeModuleBatches(data.moduleBatches, appState.batches);
+      appState.bookingWindow = normalizeBookingWindow(data.bookingWindow);
+
+      appState.draftSlots = appState.slots.map(s => ({ ...s }));
+      appState.draftBatches = [...appState.batches];
+      appState.draftModuleBatches = normalizeModuleBatches(appState.moduleBatches, appState.batches);
+
+      if (appState.loggedInAccount) {
+        appState.studentName = appState.loggedInAccount.fullName;
+        appState.mobileNumber = appState.loggedInAccount.mobileNumber;
+        appState.selectedBatch = appState.loggedInAccount.batch;
+      }
+
+      if (appState.selectedBatch && !appState.batches.includes(appState.selectedBatch)) {
+        appState.selectedBatch = '';
+      }
+      ALL_MODULE_KEYS.forEach(mod => {
+        const pickedId = appState.selectedByModule[mod];
+        if (pickedId) {
+          const sl = appState.slots.find(s => s.id === pickedId && s.active);
+          if (!sl || getSeatsLeft(sl) <= 0) {
+            appState.selectedByModule[mod] = null;
+          }
+        }
+      });
+
+      if (cacheLive && isLiveMode()) {
+        saveLiveSnapshotCache(data);
+      }
+    }
+
+    async function syncAllData({ silent = false } = {}) {
+      appState.isSyncing = true;
+      updateHeaderChrome();
+
+      if (!isLiveMode()) {
+        const demo = loadLocalDemoData();
+        applyServerPayload(demo);
+        appState.isLiveConnected = false;
+        appState.isSyncing = false;
+        renderApp({ preserveScroll: true });
+        if (!silent) showToast('Refreshed local data.', 'info');
+        return;
+      }
+
+      // Hydrate immediately from cached snapshot on cold start so UI renders in 0ms
+      if (appState.slots.length === 0) {
+        const cachedSnapshot = loadLiveSnapshotCache();
+        if (cachedSnapshot) {
+          applyServerPayload(cachedSnapshot);
+          renderApp({ preserveScroll: true });
+        }
+      }
+
+      try {
+        const data = await apiGetData();
+        applyServerPayload(data, { cacheLive: true });
+        appState.isLiveConnected = true;
+        if (!silent) showToast('Synced live with Google Sheet.', 'success');
+      } catch (err) {
+        appState.isLiveConnected = false;
+        if (appState.slots.length === 0) {
+          applyServerPayload(loadLocalDemoData());
+        }
+        if (!silent) showToast(`Sync error: ${err.message}`, 'error');
+      } finally {
+        appState.isSyncing = false;
+        renderApp({ preserveScroll: true });
+      }
+    }
+
+    function handleManualSync() {
+      if (!appState.isSyncing) syncAllData({ silent: false });
+    }
+
+    /*************************************************************************
+     * 5. SEAT COUNT & QUOTA LOGIC
+     *************************************************************************/
+    function getSlotTakenCount(slotId) {
+      return appState.bookings.filter(b => b.slotId === slotId).length;
+    }
+
+    function getSeatsLeft(slot) {
+      return Math.max(0, (Number(slot.capacity) || 0) - getSlotTakenCount(slot.id));
+    }
+
+    function isBatchAllowedForModule(batch, moduleKey) {
+      if (!batch) return false;
+      const allowedList = appState.moduleBatches[moduleKey] || [];
+      return allowedList.includes(batch);
+    }
+
+    function renderMobileQuotaBreakdownHtml(mobileRaw) {
+      const normalized = normalizeMobileKey(mobileRaw);
+      if (normalized.length < 11) return '';
+      const usage = getStudentMobileUsage(mobileRaw);
+      const totalLeft = Math.max(0, MAX_TOTAL_MODULES - usage.totalUsed);
+      const bookedThisWeek = hasBookedThisWeek(mobileRaw);
+
+      return `
+        <div class="quota-box">
+          ${bookedThisWeek ? `
+            <div style="padding:8px 10px;border-radius:8px;background:#fff1f2;border:1px solid #fecdd3;color:#be123c;font-size:11px;font-weight:700;">
+              ⚠️ Weekly Limit Reached: This number has already booked for ${escapeHtml(appState.weekLabel)}.
+            </div>
+          ` : ''}
+          <div class="quota-header">
+            <span style="font-weight:700;color:#334155;">Remaining Tests for ${escapeHtml(mobileRaw.trim())}</span>
+            <span style="font-weight:800;color:${totalLeft === 0 ? '#e11d48' : '#0A6C82'};">${totalLeft}/${MAX_TOTAL_MODULES} Total Left</span>
+          </div>
+          <div class="quota-grid">
+            ${ALL_MODULE_KEYS.map(mod => {
+              const used = usage[mod] || 0;
+              const left = Math.max(0, MAX_PER_MODULE - used);
+              const cls = left === 0 ? 'zero' : left === 1 ? 'warn' : '';
+              return `
+                <div class="quota-cell ${cls}">
+                  <div style="font-size:10px;font-weight:700;color:#64748b;">${mod}</div>
+                  <div style="font-size:12px;font-weight:800;">${left}/${MAX_PER_MODULE} left</div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function updateMobileQuotaPreview() {
+      const container = document.getElementById('mobile-quota-preview');
+      if (container) {
+        container.innerHTML = renderMobileQuotaBreakdownHtml(appState.mobileNumber);
+      }
+    }
+
+    /*************************************************************************
+     * 6. CENTER-SCREEN NOTIFICATION & CONFIRM MODAL
+     *************************************************************************/
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const iconMap = {
+        success: '✅',
+        error: '⚠️',
+        info: 'ℹ️'
+      };
+
+      const el = document.createElement('div');
+      el.className = `toast toast-${type}`;
+      el.innerHTML = `
+        <div class="toast-badge">${iconMap[type] || '✅'}</div>
+        <div>${escapeHtml(message)}</div>
+      `;
+      container.appendChild(el);
+      setTimeout(() => {
+        el.style.opacity = '0';
+        el.style.transform = 'scale(0.95)';
+        el.style.transition = 'opacity 0.25s, transform 0.25s';
+        setTimeout(() => el.remove(), 260);
+      }, 2800);
+    }
+
+    function openConfirmModal({ title, message, confirmText = 'Confirm', onConfirm }) {
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-message').textContent = message;
+      document.getElementById('modal-confirm-btn').textContent = confirmText;
+      pendingConfirmFn = onConfirm;
+      document.getElementById('confirm-modal').classList.remove('hidden');
+    }
+
+    function closeConfirmModal() {
+      document.getElementById('confirm-modal').classList.add('hidden');
+      pendingConfirmFn = null;
+    }
+
+    document.getElementById('modal-cancel-btn').addEventListener('click', closeConfirmModal);
+    document.getElementById('modal-confirm-btn').addEventListener('click', () => {
+      const fn = pendingConfirmFn;
+      closeConfirmModal();
+      if (typeof fn === 'function') fn();
+    });
+
+    /*************************************************************************
+     * 7. BRAND LOGO RENDERER
+     *************************************************************************/
+    function renderBrandLogo() {
+      const slot = document.getElementById('brand-logo-slot');
+      const customSrc = getCustomLogo();
+      const logoSrc = customSrc || DEFAULT_LOGO_PATH;
+
+      slot.innerHTML = `
+        <img
+          src="${escapeHtml(logoSrc)}"
+          alt="AIMS English"
+          class="brand-logo-img"
+          onerror="handleLogoFallback(this)"
+        />
+      `;
+    }
+
+    function handleLogoFallback(imgEl) {
+      const slot = document.getElementById('brand-logo-slot');
+      if (!slot) return;
+      slot.innerHTML = `
+        <div style="display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:10px;background:rgba(255,255,255,0.06);">
+          <div style="width:32px;height:32px;border-radius:8px;background:#0A6C82;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;">A</div>
+          <div>
+            <div style="font-weight:800;font-size:15px;letter-spacing:0.06em;color:#fff;">AIMS</div>
+            <div style="font-size:8px;font-weight:700;letter-spacing:0.25em;color:#DDA73C;text-transform:uppercase;">ENGLISH</div>
+          </div>
+        </div>
+      `;
+    }
+
+    /*************************************************************************
+     * 8. STUDENT ACCOUNT & BOOKING ACTIONS
+     *************************************************************************/
+    function switchStudentAuthMode(mode) {
+      appState.authMode = mode;
+      renderApp();
+    }
+
+    function switchStudentPortalTab(tab) {
+      appState.studentTab = tab;
+      renderApp();
+    }
+
+    async function handleStudentSignup(e) {
+      if (e) e.preventDefault();
+      if (appState.isAuthSubmitting) return;
+
+      const fullName = (document.getElementById('signup-name')?.value || '').trim();
+      const username = (document.getElementById('signup-username')?.value || '').trim();
+      const password = (document.getElementById('signup-password')?.value || '').trim();
+      const mobileNumber = (document.getElementById('signup-mobile')?.value || '').trim();
+      const batch = (document.getElementById('signup-batch')?.value || '').trim();
+
+      if (!fullName || !username || !password || !mobileNumber || !batch) {
+        showToast('Please fill in Full Name, Username, Password, Mobile Number, and Batch.', 'error');
+        return;
+      }
+      if (username.length < 3) {
+        showToast('Username must be at least 3 characters.', 'error');
+        return;
+      }
+      if (password.length < 4) {
+        showToast('Password must be at least 4 characters.', 'error');
+        return;
+      }
+      if (normalizeMobileKey(mobileNumber).length < 11) {
+        showToast('Please enter a valid 11-digit mobile number.', 'error');
+        return;
+      }
+
+      appState.isAuthSubmitting = true;
+      renderApp({ preserveScroll: true });
+
+      try {
+        let accountObj = null;
+        let isPending = false;
+        if (isLiveMode()) {
+          const res = await apiPost({
+            action: 'studentSignup',
+            fullName,
+            username,
+            password,
+            mobileNumber,
+            batch
+          });
+          accountObj = res.account;
+          isPending = Boolean(res.pendingApproval) || String(accountObj?.status || '').toLowerCase() === 'pending';
+          applyServerPayload(res, { cacheLive: true });
+        } else {
+          const demo = loadLocalDemoData();
+          const unameLower = username.toLowerCase();
+          const mKey = normalizeMobileKey(mobileNumber);
+
+          if ((demo.accounts || []).some(a => String(a.username || '').trim().toLowerCase() === unameLower)) {
+            throw new Error('Username already exists, please choose a different username.');
+          }
+          if ((demo.accounts || []).some(a => normalizeMobileKey(a.mobileNumber) === mKey)) {
+            throw new Error('An account already exists for this mobile number. Please log in instead.');
+          }
+
+          accountObj = {
+            accountId: 'ACC-' + Date.now().toString(36).toUpperCase(),
+            fullName,
+            username,
+            password,
+            mobileNumber,
+            batch,
+            createdAt: new Date().toISOString(),
+            status: 'Pending'
+          };
+          isPending = true;
+          demo.accounts = (demo.accounts || []).concat([accountObj]);
+          saveLocalDemoData(demo);
+          applyServerPayload(demo);
+        }
+
+        if (isPending) {
+          appState.authMode = 'login';
+          showToast(`Account Request Sent! Pending QC approval by your Batch ${batch} Teacher.`, 'info');
+          return;
+        }
+
+        const safeSession = {
+          accountId: accountObj.accountId,
+          fullName: accountObj.fullName,
+          username: accountObj.username,
+          mobileNumber: accountObj.mobileNumber,
+          batch: accountObj.batch
+        };
+        appState.loggedInAccount = safeSession;
+        appState.studentTab = 'book';
+        appState.studentName = safeSession.fullName;
+        appState.mobileNumber = safeSession.mobileNumber;
+        appState.selectedBatch = safeSession.batch;
+        saveStudentSession(safeSession);
+
+        showToast(`Account Created! Welcome, ${safeSession.fullName}.`, 'success');
+      } catch (err) {
+        showToast(err.message || 'Sign up failed.', 'error');
+      } finally {
+        appState.isAuthSubmitting = false;
+        renderApp();
+      }
+    }
+
+    async function handleStudentLogin(e) {
+      if (e) e.preventDefault();
+      if (appState.isAuthSubmitting) return;
+
+      const username = (document.getElementById('login-username')?.value || '').trim();
+      const password = (document.getElementById('login-password')?.value || '').trim();
+
+      if (!username || !password) {
+        showToast('Enter both your Username and Password.', 'error');
+        return;
+      }
+
+      appState.isAuthSubmitting = true;
+      renderApp({ preserveScroll: true });
+
+      try {
+        let accountObj = null;
+        if (isLiveMode()) {
+          const res = await apiPost({
+            action: 'studentLogin',
+            username,
+            password
+          });
+          accountObj = res.account;
+          applyServerPayload(res, { cacheLive: true });
+        } else {
+          const demo = loadLocalDemoData();
+          const unameLower = username.toLowerCase();
+          const found = (demo.accounts || []).find(
+            a => String(a.username || '').trim().toLowerCase() === unameLower && String(a.password || '').trim() === password
+          );
+          if (!found) {
+            throw new Error('Invalid username or password.');
+          }
+          const st = String(found.status || '').trim() || 'Approved';
+          if (st.toLowerCase() !== 'approved') {
+            throw new Error(`Your account is pending QC approval by your Batch Teacher (Batch ${found.batch}). Please try again once approved.`);
+          }
+          accountObj = found;
+          applyServerPayload(demo);
+        }
+
+        const safeSession = {
+          accountId: accountObj.accountId,
+          fullName: accountObj.fullName,
+          username: accountObj.username,
+          mobileNumber: accountObj.mobileNumber,
+          batch: accountObj.batch
+        };
+        appState.loggedInAccount = safeSession;
+        appState.studentTab = 'book';
+        appState.studentName = safeSession.fullName;
+        appState.mobileNumber = safeSession.mobileNumber;
+        appState.selectedBatch = safeSession.batch;
+        appState.selectedByModule = { Speaking: null, Reading: null, Listening: null, Writing: null };
+        saveStudentSession(safeSession);
+
+        showToast(`Login Successful! Welcome back, ${safeSession.fullName}.`, 'success');
+      } catch (err) {
+        showToast(err.message || 'Login failed.', 'error');
+      } finally {
+        appState.isAuthSubmitting = false;
+        renderApp();
+      }
+    }
+
+    function handleStudentLogout() {
+      appState.loggedInAccount = null;
+      appState.studentTab = 'book';
+      appState.studentName = '';
+      appState.mobileNumber = '';
+      appState.selectedBatch = '';
+      appState.selectedByModule = { Speaking: null, Reading: null, Listening: null, Writing: null };
+      saveStudentSession(null);
+      showToast('Logged out of student account.', 'info');
+      renderApp();
+    }
+
+    function handleToggleSlot(moduleKey, slotId) {
+      const slot = appState.slots.find(s => s.id === slotId && s.active);
+      if (!slot) return;
+      const winStatus = getBookingWindowStatus();
+      if (!winStatus.isOpen) {
+        showToast(`Booking closed. Open only during: ${winStatus.label}.`, 'error');
+        return;
+      }
+      if (hasBookedThisWeek(appState.mobileNumber)) {
+        showToast(`Weekly limit: This mobile number has already booked for ${appState.weekLabel}.`, 'error');
+        return;
+      }
+      const usage = getStudentMobileUsage(appState.mobileNumber);
+      if ((usage[moduleKey] || 0) >= MAX_PER_MODULE) {
+        showToast(`Quota reached: You have already taken 4 ${moduleKey} tests.`, 'error');
+        return;
+      }
+      if (getSeatsLeft(slot) <= 0 && appState.selectedByModule[moduleKey] !== slotId) {
+        showToast('This slot is completely full.', 'error');
+        return;
+      }
+      appState.selectedByModule[moduleKey] =
+        appState.selectedByModule[moduleKey] === slotId ? null : slotId;
+      renderApp({ preserveScroll: true });
+    }
+
+    async function handleStudentSubmit(e) {
+      if (e) e.preventDefault();
+      if (appState.isSubmitting) return;
+
+      const winStatus = getBookingWindowStatus();
+      if (!winStatus.isOpen) {
+        showToast(`Booking is currently closed. Booking timeline: ${winStatus.label}.`, 'error');
+        return;
+      }
+
+      const studentName = appState.studentName.trim();
+      const mobileNumber = appState.mobileNumber.trim();
+      const batch = appState.selectedBatch;
+      const chosenSlotIds = ALL_MODULE_KEYS
+        .map(m => appState.selectedByModule[m])
+        .filter(Boolean);
+
+      if (!studentName) {
+        showToast('Please enter your Full Name.', 'error');
+        return;
+      }
+      if (!normalizeMobileKey(mobileNumber)) {
+        showToast('Please enter a valid Mobile Number.', 'error');
+        return;
+      }
+      if (hasBookedThisWeek(mobileNumber)) {
+        showToast(`Weekly limit: This mobile number has already submitted a booking for ${appState.weekLabel}.`, 'error');
+        return;
+      }
+      if (!batch) {
+        showToast('Please select your Batch.', 'error');
+        return;
+      }
+      if (chosenSlotIds.length === 0) {
+        showToast('Please choose at least one test slot.', 'error');
+        return;
+      }
+
+      const usage = getStudentMobileUsage(mobileNumber);
+      for (let i = 0; i < ALL_MODULE_KEYS.length; i++) {
+        const mod = ALL_MODULE_KEYS[i];
+        if (appState.selectedByModule[mod] && (usage[mod] || 0) >= MAX_PER_MODULE) {
+          showToast(`Quota limit: Maximum 4 attempts allowed for ${mod}.`, 'error');
+          return;
+        }
+      }
+
+      appState.isSubmitting = true;
+      renderApp({ preserveScroll: true });
+
+      try {
+        if (isLiveMode()) {
+          const updated = await apiPost({
+            action: 'submitBooking',
+            studentName,
+            mobileNumber,
+            batch,
+            slotIds: chosenSlotIds
+          });
+          applyServerPayload(updated, { cacheLive: true });
+        } else {
+          const demo = loadLocalDemoData();
+          const now = new Date().toISOString();
+          chosenSlotIds.forEach((sid, idx) => {
+            const sl = demo.slots.find(s => s.id === sid);
+            if (sl) {
+              demo.bookings.push({
+                bookingId: `BK-${Date.now().toString(36).toUpperCase()}-${idx + 1}`,
+                weekLabel: demo.weekLabel,
+                timestamp: now,
+                studentName,
+                mobileNumber,
+                batch,
+                module: sl.module,
+                slotId: sl.id,
+                day: sl.day,
+                time: sl.time
+              });
+            }
+          });
+          saveLocalDemoData(demo);
+          applyServerPayload(demo);
+        }
+
+        appState.selectedByModule = { Speaking: null, Reading: null, Listening: null, Writing: null };
+        showToast('Booking Done! Your Partial Test slots are confirmed.', 'success');
+      } catch (err) {
+        showToast(err.message || 'Booking failed. Please try again.', 'error');
+      } finally {
+        appState.isSubmitting = false;
+        renderApp({ preserveScroll: true });
+      }
+    }
+
+    /*************************************************************************
+     * 9. MANAGEMENT PORTAL ACTIONS
+     *************************************************************************/
+    function handleFooterPortalClick() {
+      if (appState.view === 'student') {
+        appState.view = appState.adminAuthenticated ? 'admin' : 'login';
+      } else {
+        appState.view = 'student';
+      }
+      renderApp();
+    }
+
+    async function handleAdminLogin(e) {
+      e.preventDefault();
+      const input = document.getElementById('admin-pw-input');
+      const btn = document.getElementById('admin-login-btn');
+      const pw = (input ? input.value : '').trim();
+
+      if (!pw) {
+        showToast('Enter management password.', 'error');
+        return;
+      }
+
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Verifying...';
+      }
+
+      try {
+        let serverAccounts = null;
+        if (isLiveMode()) {
+          const res = await apiPost({ action: 'verifyPassword', password: pw });
+          if (!res || !res.valid) {
+            showToast('Incorrect password.', 'error');
+            return;
+          }
+          if (Array.isArray(res.accounts)) {
+            serverAccounts = res.accounts;
+          }
+        } else if (pw !== getLocalPassword()) {
+          showToast('Incorrect password.', 'error');
+          return;
+        }
+
+        appState.adminAuthenticated = true;
+        appState.adminPasswordInSession = pw;
+        if (serverAccounts) {
+          appState.accounts = serverAccounts;
+        }
+        appState.view = 'admin';
+        appState.draftSlots = appState.slots.map(s => ({ ...s }));
+        appState.draftBatches = [...appState.batches];
+        appState.draftModuleBatches = normalizeModuleBatches(appState.moduleBatches, appState.batches);
+        showToast('Management Portal Unlocked.', 'success');
+        renderApp();
+      } catch (err) {
+        showToast(`Login error: ${err.message}`, 'error');
+      } finally {
+        const currentBtn = document.getElementById('admin-login-btn');
+        if (currentBtn) {
+          currentBtn.disabled = false;
+          currentBtn.textContent = 'Unlock Management Portal';
+        }
+      }
+    }
+
+    function switchAdminTab(tab) {
+      appState.adminTab = tab;
+      if (tab === 'slots') {
+        appState.draftSlots = appState.slots.map(s => ({ ...s }));
+      } else if (tab === 'batches') {
+        appState.draftBatches = [...appState.batches];
+        appState.draftModuleBatches = normalizeModuleBatches(appState.moduleBatches, appState.batches);
+      }
+      renderApp();
+    }
+
+    async function handleReviewAccount(accountId, decision) {
+      const target = (appState.accounts || []).find(a => a.accountId === accountId);
+      if (!target) return;
+
+      const executeReview = async () => {
+        try {
+          if (isLiveMode()) {
+            const updated = await apiPost({
+              action: 'reviewAccount',
+              password: appState.adminPasswordInSession,
+              accountId,
+              decision
+            });
+            applyServerPayload(updated, { cacheLive: true });
+          } else {
+            const demo = loadLocalDemoData();
+            if (decision === 'approve') {
+              demo.accounts = (demo.accounts || []).map(a =>
+                a.accountId === accountId ? { ...a, status: 'Approved' } : a
+              );
+            } else {
+              demo.accounts = (demo.accounts || []).filter(a => a.accountId !== accountId);
+            }
+            saveLocalDemoData(demo);
+            applyServerPayload(demo);
+          }
+          showToast(
+            decision === 'approve'
+              ? `Approved ${target.fullName} (Batch ${target.batch})!`
+              : `Rejected & removed ${target.fullName}'s request.`,
+            decision === 'approve' ? 'success' : 'info'
+          );
+          renderApp({ preserveScroll: true });
+        } catch (err) {
+          showToast(`Action failed: ${err.message}`, 'error');
+        }
+      };
+
+      if (decision === 'reject') {
+        openConfirmModal({
+          title: 'Reject Account Request?',
+          message: `Reject and delete the sign-up request from ${target.fullName} (${target.mobileNumber}, Batch ${target.batch})?`,
+          confirmText: 'Reject Request',
+          onConfirm: executeReview
+        });
+      } else {
+        await executeReview();
+      }
+    }
+
+    function handleAddDraftSlot() {
+      appState.draftSlots.push({
+        id: 'SL-' + Date.now().toString(36).toUpperCase(),
+        module: 'Speaking',
+        day: 'Monday',
+        time: '4:00 PM – 4:20 PM',
+        capacity: 2,
+        active: true
+      });
+      renderApp({ preserveScroll: true });
+    }
+
+    function handleDeleteDraftSlot(index) {
+      appState.draftSlots.splice(index, 1);
+      renderApp({ preserveScroll: true });
+    }
+
+    async function handleSaveAllSlots() {
+      const cleaned = appState.draftSlots
+        .map(s => ({
+          id: s.id || 'SL-' + Date.now().toString(36).toUpperCase(),
+          module: s.module,
+          day: String(s.day || '').trim() || 'Monday',
+          time: String(s.time || '').trim() || '12:00 PM',
+          capacity: Math.max(1, Number(s.capacity) || 1),
+          active: Boolean(s.active)
+        }));
+
+      try {
+        if (isLiveMode()) {
+          const updated = await apiPost({
+            action: 'saveSlots',
+            password: appState.adminPasswordInSession,
+            slots: cleaned
+          });
+          applyServerPayload(updated, { cacheLive: true });
+        } else {
+          const demo = loadLocalDemoData();
+          demo.slots = cleaned;
+          saveLocalDemoData(demo);
+          applyServerPayload(demo);
+        }
+        showToast('Saved! All Test Slots Updated Live.', 'success');
+        renderApp({ preserveScroll: true });
+      } catch (err) {
+        showToast(`Save failed: ${err.message}`, 'error');
+      }
+    }
+
+    function handleAddDraftBatch() {
+      const inp = document.getElementById('new-batch-input');
+      const val = (inp ? inp.value : '').trim();
+      if (!val) return;
+      if (appState.draftBatches.includes(val)) {
+        showToast('This batch already exists.', 'error');
+        return;
+      }
+      appState.draftBatches.push(val);
+      ALL_MODULE_KEYS.forEach(mod => {
+        if (!appState.draftModuleBatches[mod]) appState.draftModuleBatches[mod] = [];
+        if (!appState.draftModuleBatches[mod].includes(val)) {
+          appState.draftModuleBatches[mod].push(val);
+        }
+      });
+      if (inp) inp.value = '';
+      renderApp({ preserveScroll: true });
+    }
+
+    function handleRemoveDraftBatch(batchName) {
+      appState.draftBatches = appState.draftBatches.filter(b => b !== batchName);
+      ALL_MODULE_KEYS.forEach(mod => {
+        if (Array.isArray(appState.draftModuleBatches[mod])) {
+          appState.draftModuleBatches[mod] = appState.draftModuleBatches[mod].filter(b => b !== batchName);
+        }
+      });
+      renderApp({ preserveScroll: true });
+    }
+
+    function handleToggleModuleBatch(moduleKey, batchName) {
+      if (!Array.isArray(appState.draftModuleBatches[moduleKey])) {
+        appState.draftModuleBatches[moduleKey] = [];
+      }
+      const idx = appState.draftModuleBatches[moduleKey].indexOf(batchName);
+      if (idx > -1) {
+        appState.draftModuleBatches[moduleKey].splice(idx, 1);
+      } else {
+        appState.draftModuleBatches[moduleKey].push(batchName);
+      }
+      renderApp({ preserveScroll: true });
+    }
+
+    function handleSetAllBatchesForModule(moduleKey, enableAll) {
+      appState.draftModuleBatches[moduleKey] = enableAll ? [...appState.draftBatches] : [];
+      renderApp({ preserveScroll: true });
+    }
+
+    async function handleSaveBatches() {
+      const batchesToSave = [...appState.draftBatches];
+      const rulesToSave = normalizeModuleBatches(appState.draftModuleBatches, batchesToSave);
+      try {
+        if (isLiveMode()) {
+          const updated = await apiPost({
+            action: 'saveBatches',
+            password: appState.adminPasswordInSession,
+            batches: batchesToSave,
+            moduleBatches: rulesToSave
+          });
+          applyServerPayload(updated, { cacheLive: true });
+        } else {
+          const demo = loadLocalDemoData();
+          demo.batches = batchesToSave;
+          demo.moduleBatches = rulesToSave;
+          saveLocalDemoData(demo);
+          applyServerPayload(demo);
+        }
+        showToast('Saved! Batches & Module Permissions Updated.', 'success');
+        renderApp({ preserveScroll: true });
+      } catch (err) {
+        showToast(`Save failed: ${err.message}`, 'error');
+      }
+    }
+
+    function requestDeleteBooking(bookingId) {
+      const b = appState.bookings.find(x => x.bookingId === bookingId);
+      if (!b) return;
+      openConfirmModal({
+        title: 'Remove Booking?',
+        message: `Remove ${b.studentName} (${b.mobileNumber || 'No Mobile'}) from ${b.module} (${b.time})?`,
+        confirmText: 'Remove',
+        onConfirm: async () => {
+          try {
+            if (isLiveMode()) {
+              const updated = await apiPost({
+                action: 'deleteBooking',
+                password: appState.adminPasswordInSession,
+                bookingId
+              });
+              applyServerPayload(updated, { cacheLive: true });
+            } else {
+              const demo = loadLocalDemoData();
+              demo.bookings = demo.bookings.filter(x => x.bookingId !== bookingId);
+              saveLocalDemoData(demo);
+              applyServerPayload(demo);
+            }
+            showToast('Booking Removed & Seat Reopened.', 'info');
+            renderApp({ preserveScroll: true });
+          } catch (err) {
+            showToast(`Error: ${err.message}`, 'error');
+          }
+        }
+      });
+    }
+
+    function requestStartNewWeek() {
+      const inp = document.getElementById('new-week-label-input');
+      const nextLabel = (inp ? inp.value : '').trim();
+      if (!nextLabel) {
+        showToast('Enter a label for the new week (e.g., Week 12 - Nov).', 'error');
+        return;
+      }
+
+      openConfirmModal({
+        title: 'Archive & Start New Week?',
+        message: `All ${appState.bookings.length} current bookings will be archived (keeping every mobile number's 4-per-module quota count), seats will reset, and all batches will regain access to all modules for "${nextLabel}".`,
+        confirmText: 'Archive & Reset',
+        onConfirm: async () => {
+          try {
+            if (isLiveMode()) {
+              const updated = await apiPost({
+                action: 'startNewWeek',
+                password: appState.adminPasswordInSession,
+                newWeekLabel: nextLabel
+              });
+              applyServerPayload(updated, { cacheLive: true });
+            } else {
+              const demo = loadLocalDemoData();
+              const archivedAt = new Date().toISOString();
+              demo.archive = demo.archive.concat(demo.bookings.map(b => ({ ...b, archivedAt })));
+              demo.bookings = [];
+              demo.weekLabel = nextLabel;
+              demo.moduleBatches = buildDefaultModuleBatches(demo.batches);
+              saveLocalDemoData(demo);
+              applyServerPayload(demo);
+            }
+            showToast(`Week Archived & Reset to "${nextLabel}"!`, 'success');
+            renderApp();
+          } catch (err) {
+            showToast(`Reset failed: ${err.message}`, 'error');
+          }
+        }
+      });
+    }
+
+    async function handleChangePassword(e) {
+      e.preventDefault();
+      const inp = document.getElementById('new-admin-pw-input');
+      const nextPw = (inp ? inp.value : '').trim();
+      if (nextPw.length < 4) {
+        showToast('Password must be at least 4 characters.', 'error');
+        return;
+      }
+
+      try {
+        if (isLiveMode()) {
+          await apiPost({
+            action: 'changePassword',
+            password: appState.adminPasswordInSession,
+            newPassword: nextPw
+          });
+        } else {
+          localStorage.setItem(STORAGE_PW_KEY, nextPw);
+        }
+        appState.adminPasswordInSession = nextPw;
+        if (inp) inp.value = '';
+        showToast('Saved! Management Password Updated.', 'success');
+      } catch (err) {
+        showToast(`Error: ${err.message}`, 'error');
+      }
+    }
+
+    async function handleSaveConnectionAndLogo() {
+      const urlInp = document.getElementById('settings-script-url');
+      const logoInp = document.getElementById('settings-logo-url');
+      const newUrl = (urlInp ? urlInp.value : '').trim();
+      const rawLogo = (logoInp ? logoInp.value : '').trim();
+      const normalizedLogo = normalizeDriveImageUrl(rawLogo);
+
+      try {
+        localStorage.setItem(STORAGE_URL_KEY, newUrl);
+        localStorage.setItem(STORAGE_LOGO_KEY, normalizedLogo);
+      } catch (e) {}
+
+      appState.scriptUrl = newUrl;
+      renderBrandLogo();
+      await syncAllData({ silent: true });
+      showToast('Saved! Connection & Brand Logo Updated.', 'success');
+    }
+
+    async function handleSaveBookingWindow(e) {
+      if (e) e.preventDefault();
+      const enabledEl = document.getElementById('settings-window-enabled');
+      const startDateEl = document.getElementById('settings-window-start-date');
+      const startTimeEl = document.getElementById('settings-window-start-time');
+      const endDateEl = document.getElementById('settings-window-end-date');
+      const endTimeEl = document.getElementById('settings-window-end-time');
+
+      const nextWin = normalizeBookingWindow({
+        enabled: enabledEl ? enabledEl.checked : true,
+        startDate: startDateEl ? startDateEl.value : DEFAULT_BOOKING_WINDOW.startDate,
+        startTime: startTimeEl ? startTimeEl.value : DEFAULT_BOOKING_WINDOW.startTime,
+        endDate: endDateEl ? endDateEl.value : DEFAULT_BOOKING_WINDOW.endDate,
+        endTime: endTimeEl ? endTimeEl.value : DEFAULT_BOOKING_WINDOW.endTime
+      });
+
+      const startDt = parseLocalDateTime(nextWin.startDate, nextWin.startTime);
+      const endDt = parseLocalDateTime(nextWin.endDate, nextWin.endTime);
+      if (!startDt || !endDt || endDt.getTime() <= startDt.getTime()) {
+        showToast('End date & time must be later than start date & time.', 'error');
+        return;
+      }
+
+      try {
+        if (isLiveMode()) {
+          const updated = await apiPost({
+            action: 'saveBookingWindow',
+            password: appState.adminPasswordInSession,
+            bookingWindow: nextWin
+          });
+          applyServerPayload(updated, { cacheLive: true });
+        } else {
+          const demo = loadLocalDemoData();
+          demo.bookingWindow = nextWin;
+          saveLocalDemoData(demo);
+          applyServerPayload(demo);
+        }
+        showToast('Saved! Booking Timeline Window Updated.', 'success');
+        renderApp({ preserveScroll: true });
+      } catch (err) {
+        showToast(`Save failed: ${err.message}`, 'error');
+      }
+    }
+
+    function downloadCsvFallback(rows, filename) {
+      const headers = Object.keys(rows[0] || { Info: '' });
+      const csvLines = [
+        headers.join(','),
+        ...rows.map(r => headers.map(h => `"${String(r[h] ?? '').replace(/"/g, '""')}"`).join(','))
+      ];
+      const blob = new Blob([csvLines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function handleExportMultiSheetExcel() {
+      const quotaMap = computeMobileQuotaMap(appState.archive, appState.bookings);
+      const quotaRows = Object.values(quotaMap)
+        .sort((a, b) => b.totalUsed - a.totalUsed)
+        .map(q => ({
+          'Mobile Number': q.mobileDisplay || q.mobileKey,
+          'Student Name': q.studentName,
+          'Batch': q.batch,
+          'Speaking Used': q.Speaking,
+          'Speaking Left': Math.max(0, MAX_PER_MODULE - q.Speaking),
+          'Reading Used': q.Reading,
+          'Reading Left': Math.max(0, MAX_PER_MODULE - q.Reading),
+          'Listening Used': q.Listening,
+          'Listening Left': Math.max(0, MAX_PER_MODULE - q.Listening),
+          'Writing Used': q.Writing,
+          'Writing Left': Math.max(0, MAX_PER_MODULE - q.Writing),
+          'Total Used (Max 16)': q.totalUsed,
+          'Total Left': Math.max(0, MAX_TOTAL_MODULES - q.totalUsed)
+        }));
+
+      const archiveRows = appState.archive.map(a => ({
+        'Booking ID': a.bookingId,
+        'Week': a.weekLabel,
+        'Student Name': a.studentName,
+        'Mobile Number': a.mobileNumber,
+        'Batch': a.batch,
+        'Module': a.module,
+        'Day': a.day,
+        'Time': a.time,
+        'Booked At': a.timestamp,
+        'Archived At': a.archivedAt
+      }));
+
+      const currentRows = appState.bookings.map(b => ({
+        'Booking ID': b.bookingId,
+        'Week': b.weekLabel,
+        'Student Name': b.studentName,
+        'Mobile Number': b.mobileNumber,
+        'Batch': b.batch,
+        'Module': b.module,
+        'Day': b.day,
+        'Time': b.time,
+        'Booked At': b.timestamp
+      }));
+
+      const safeWeek = String(appState.weekLabel || 'Current_Week').replace(/[^a-zA-Z0-9_-]+/g, '_');
+
+      if (typeof XLSX === 'undefined') {
+        downloadCsvFallback(
+          currentRows.length ? currentRows : [{ Info: 'No bookings this week' }],
+          `AIMS_IELTS_Partial_Test_${safeWeek}.csv`
+        );
+        showToast('Downloaded CSV report (offline fallback).', 'info');
+        return;
+      }
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(
+        wb,
+        XLSX.utils.json_to_sheet(quotaRows.length ? quotaRows : [{ Info: 'No mobile records yet' }]),
+        'Quota Ledger (4-Module)'
+      );
+      XLSX.utils.book_append_sheet(
+        wb,
+        XLSX.utils.json_to_sheet(archiveRows.length ? archiveRows : [{ Info: 'Archive is empty' }]),
+        'Archive Database'
+      );
+      XLSX.utils.book_append_sheet(
+        wb,
+        XLSX.utils.json_to_sheet(currentRows.length ? currentRows : [{ Info: 'No bookings this week' }]),
+        'Current Week'
+      );
+
+      ALL_MODULE_KEYS.forEach(mod => {
+        const modRows = appState.bookings
+          .filter(b => b.module === mod)
+          .map(b => ({
+            'Student Name': b.studentName,
+            'Mobile Number': b.mobileNumber,
+            'Batch': b.batch,
+            'Day': b.day,
+            'Time': b.time,
+            'Booking ID': b.bookingId
+          }));
+        XLSX.utils.book_append_sheet(
+          wb,
+          XLSX.utils.json_to_sheet(modRows.length ? modRows : [{ Info: `No ${mod} bookings this week` }]),
+          mod
+        );
+      });
+
+      XLSX.writeFile(wb, `AIMS_IELTS_Partial_Test_${safeWeek}.xlsx`);
+      showToast('Multi-Sheet Excel Database Downloaded!', 'success');
+    }
+
+    /*************************************************************************
+     * 10. VIEW RENDERERS #Monsur
+     *************************************************************************/
+    function updateHeaderChrome() {
+      const dot = document.getElementById('sync-dot');
+      const txt = document.getElementById('sync-text');
+      const icon = document.getElementById('sync-icon');
+      const weekEl = document.getElementById('header-week-label');
+      const modeTag = document.getElementById('header-mode-tag');
+      const footerBtn = document.getElementById('footer-portal-btn');
+
+      if (icon) {
+        if (appState.isSyncing) icon.classList.add('animate-spin-fast');
+        else icon.classList.remove('animate-spin-fast');
+      }
+
+      if (dot && txt) {
+        if (!isLiveMode()) {
+          dot.className = 'dot dot-slate';
+          txt.textContent = 'Local Mode';
+        } else if (appState.isLiveConnected) {
+          dot.className = 'dot dot-emerald';
+          txt.textContent = 'Live Sync';
+        } else {
+          dot.className = 'dot dot-amber';
+          txt.textContent = appState.isSyncing ? 'Syncing...' : 'Offline / Retry';
+        }
+      }
+
+      if (weekEl) weekEl.textContent = appState.weekLabel || 'Current Week';
+
+      if (modeTag && footerBtn) {
+        if (appState.view === 'student') {
+          modeTag.className = 'mode-badge-student';
+          modeTag.textContent = 'Student Portal';
+          footerBtn.className = 'footer-btn';
+          footerBtn.textContent = '🔒 Teacher / Management Portal';
+        } else {
+          modeTag.className = 'mode-badge-admin';
+          modeTag.textContent = 'Management Portal';
+          footerBtn.className = 'footer-btn in-admin';
+          footerBtn.textContent = '← Back to Student Portal';
+        }
+      }
+    }
+
+    function renderStudentAuthGateView() {
+      const isSignup = appState.authMode === 'signup';
+
+      return `
+        <section class="card" style="margin-top:8px;padding:20px;">
+          <div style="text-align:center;">
+            <div style="width:44px;height:44px;border-radius:14px;background:#071419;color:#DDA73C;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:18px;">
+              🎓
+            </div>
+            <h2 style="font-size:16px;font-weight:800;color:#0f172a;">Student Account Portal</h2>
+            <p class="helper-text">Sign up once with your Mobile Number & Batch, or log in to book your Partial Test</p>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#f1f5f9;padding:4px;border-radius:12px;">
+            <button
+              type="button"
+              onclick="switchStudentAuthMode('login')"
+              style="border:none;border-radius:10px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;background:${!isSignup ? '#0A6C82' : 'transparent'};color:${!isSignup ? '#fff' : '#475569'};"
+            >
+              Student Login
+            </button>
+            <button
+              type="button"
+              onclick="switchStudentAuthMode('signup')"
+              style="border:none;border-radius:10px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;background:${isSignup ? '#0A6C82' : 'transparent'};color:${isSignup ? '#fff' : '#475569'};"
+            >
+              Create Account
+            </button>
+          </div>
+
+          ${!isSignup ? `
+            <form onsubmit="handleStudentLogin(event)" style="display:flex;flex-direction:column;gap:12px;">
+              <div class="field-group">
+                <label for="login-username" class="field-label">Username</label>
+                <input
+                  id="login-username"
+                  type="text"
+                  placeholder="Enter your username"
+                  autocomplete="username"
+                  class="input"
+                />
+              </div>
+
+              <div class="field-group">
+                <label for="login-password" class="field-label">Password</label>
+                <input
+                  id="login-password"
+                  type="password"
+                  placeholder="Enter your password"
+                  autocomplete="current-password"
+                  class="input"
+                />
+              </div>
+
+              <button
+                type="submit"
+                ${appState.isAuthSubmitting ? 'disabled' : ''}
+                class="btn btn-teal btn-full"
+              >
+                ${appState.isAuthSubmitting ? 'Logging in...' : 'Login to Booking Portal'}
+              </button>
+
+              <p style="font-size:11px;color:#64748b;text-align:center;">
+                Forgot username or password? Contact AIMS staff with your registered mobile number.
+              </p>
+            </form>
+          ` : `
+            <form onsubmit="handleStudentSignup(event)" style="display:flex;flex-direction:column;gap:10px;">
+              <div class="field-group">
+                <label for="signup-name" class="field-label">Student Full Name</label>
+                <input
+                  id="signup-name"
+                  type="text"
+                  placeholder="Enter your full name"
+                  class="input"
+                />
+              </div>
+
+              <div class="field-group">
+                <label for="signup-username" class="field-label">Choose Username (Unique)</label>
+                <input
+                  id="signup-username"
+                  type="text"
+                  placeholder="e.g., rahim209"
+                  autocomplete="username"
+                  class="input"
+                />
+              </div>
+
+              <div class="field-group">
+                <label for="signup-password" class="field-label">Choose Password</label>
+                <input
+                  id="signup-password"
+                  type="password"
+                  placeholder="Minimum 4 characters"
+                  autocomplete="new-password"
+                  class="input"
+                />
+              </div>
+
+              <div class="field-group">
+                <label for="signup-mobile" class="field-label">Mobile Number (1 Account per Number)</label>
+                <input
+                  id="signup-mobile"
+                  type="tel"
+                  placeholder="017XX-XXXXXX"
+                  class="input"
+                />
+              </div>
+
+              <div class="field-group">
+                <label for="signup-batch" class="field-label">Student Batch</label>
+                <select id="signup-batch" class="select">
+                  <option value="">— Select Your Batch —</option>
+                  ${appState.batches.map(b => `
+                    <option value="${escapeHtml(b)}">${escapeHtml(b)}</option>
+                  `).join('')}
+                </select>
+              </div>
+
+              <button
+                type="submit"
+                ${appState.isAuthSubmitting ? 'disabled' : ''}
+                class="btn btn-teal btn-full"
+              >
+                ${appState.isAuthSubmitting ? 'Creating Account...' : 'Create Account & Continue'}
+              </button>
+            </form>
+          `}
+        </section>
+      `;
+    }
+
+    function renderStudentHistoryView(acct) {
+      const mKey = normalizeMobileKey(acct.mobileNumber);
+      const currentBookings = appState.bookings.filter(b => normalizeMobileKey(b.mobileNumber) === mKey);
+      const pastBookings = appState.archive
+        .filter(a => normalizeMobileKey(a.mobileNumber) === mKey)
+        .slice()
+        .reverse();
+      const totalHistoryCount = currentBookings.length + pastBookings.length;
+
+      return `
+        <section class="card">
+          <div class="flex-between">
+            <div>
+              <h2 class="section-kicker">Booking History & Quota</h2>
+              <p class="helper-text">${escapeHtml(acct.fullName)} • ${escapeHtml(acct.mobileNumber)} (Batch ${escapeHtml(acct.batch)})</p>
+            </div>
+            <span style="font-size:11px;font-weight:800;padding:4px 10px;border-radius:9999px;background:#f0fdfa;color:#0A6C82;border:1px solid #99f6e4;">
+              ${totalHistoryCount}/${MAX_TOTAL_MODULES} Used
+            </span>
+          </div>
+          ${renderMobileQuotaBreakdownHtml(acct.mobileNumber)}
+        </section>
+
+        <section class="card">
+          <div class="flex-between">
+            <h3 class="section-kicker">Current Week Bookings (${currentBookings.length})</h3>
+            <span style="font-size:10px;font-weight:700;color:#059669;background:#ecfdf5;padding:3px 8px;border-radius:9999px;border:1px solid #a7f3d0;">
+              ${escapeHtml(appState.weekLabel)}
+            </span>
+          </div>
+
+          ${currentBookings.length === 0 ? `
+            <div style="padding:16px;border-radius:12px;background:#f8fafc;border:1px dashed #cbd5e1;text-align:center;">
+              <p style="font-size:12px;font-weight:600;color:#64748b;">No bookings submitted for ${escapeHtml(appState.weekLabel)} yet.</p>
+              <button
+                type="button"
+                onclick="switchStudentPortalTab('book')"
+                class="btn btn-teal btn-xs"
+                style="margin-top:8px;"
+              >
+                Book Slots Now
+              </button>
+            </div>
+          ` : `
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              ${currentBookings.map(b => `
+                <div class="list-item" style="border-left:4px solid #0A6C82;">
+                  <div>
+                    <p style="font-size:13px;font-weight:800;color:#0f172a;">${escapeHtml(b.module)}</p>
+                    <p style="font-size:11px;font-weight:600;color:#0A6C82;">${escapeHtml(b.day)} • ${escapeHtml(b.time)}</p>
+                    <p style="font-size:10px;color:#64748b;margin-top:2px;">Ref: ${escapeHtml(b.bookingId)} ${b.timestamp ? `• ${formatTimestampShort(b.timestamp)}` : ''}</p>
+                  </div>
+                  <span style="font-size:10px;font-weight:800;padding:3px 8px;border-radius:9999px;background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;">
+                    Confirmed
+                  </span>
+                </div>
+              `).join('')}
+            </div>
+          `}
+        </section>
+
+        <section class="card">
+          <div class="flex-between">
+            <h3 class="section-kicker">Past Bookings Archive (${pastBookings.length})</h3>
+            <span style="font-size:10px;font-weight:700;color:#64748b;">Previous Weeks</span>
+          </div>
+
+          ${pastBookings.length === 0 ? `
+            <p style="font-size:12px;color:#94a3b8;text-align:center;padding:12px;">No past archived bookings found for this account.</p>
+          ` : `
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              ${pastBookings.map(a => `
+                <div class="list-item">
+                  <div>
+                    <div style="display:flex;align-items:center;gap:6px;">
+                      <p style="font-size:13px;font-weight:700;color:#0f172a;">${escapeHtml(a.module)}</p>
+                      <span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;background:#e2e8f0;color:#334155;">${escapeHtml(a.weekLabel || 'Past Week')}</span>
+                    </div>
+                    <p style="font-size:11px;color:#475569;margin-top:2px;">${escapeHtml(a.day)} • ${escapeHtml(a.time)}</p>
+                    <p style="font-size:10px;color:#94a3b8;margin-top:1px;">Ref: ${escapeHtml(a.bookingId)} ${a.timestamp ? `• ${formatTimestampShort(a.timestamp)}` : ''}</p>
+                  </div>
+                  <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:9999px;background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;">
+                    Completed
+                  </span>
+                </div>
+              `).join('')}
+            </div>
+          `}
+        </section>
+      `;
+    }
+
+    function renderStudentView() {
+      if (!appState.loggedInAccount) {
+        return renderStudentAuthGateView();
+      }
+
+      const acct = appState.loggedInAccount;
+      const studentName = acct.fullName;
+      const mobileNumber = acct.mobileNumber;
+      const selectedBatch = acct.batch;
+      appState.studentName = studentName;
+      appState.mobileNumber = mobileNumber;
+      appState.selectedBatch = selectedBatch;
+
+      const mKey = normalizeMobileKey(mobileNumber);
+      const historyTotal =
+        appState.bookings.filter(b => normalizeMobileKey(b.mobileNumber) === mKey).length +
+        appState.archive.filter(a => normalizeMobileKey(a.mobileNumber) === mKey).length;
+
+      const studentTopNav = `
+        <div class="student-top-bar">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <button
+              type="button"
+              onclick="switchStudentPortalTab('history')"
+              class="student-nav-pill ${appState.studentTab === 'history' ? 'active' : 'inactive'}"
+            >
+              📋 Check History (${historyTotal})
+            </button>
+            <button
+              type="button"
+              onclick="switchStudentPortalTab('book')"
+              class="student-nav-pill ${appState.studentTab === 'book' ? 'active' : 'inactive'}"
+            >
+              🗓️ Book Slots
+            </button>
+          </div>
+          <button
+            type="button"
+            onclick="handleStudentLogout()"
+            class="btn btn-xs"
+            style="background:#fff1f2;color:#be123c;border:1px solid #fecdd3;"
+          >
+            Logout
+          </button>
+        </div>
+      `;
+
+      if (appState.studentTab === 'history') {
+        return studentTopNav + renderStudentHistoryView(acct);
+      }
+
+      const { selectedByModule } = appState;
+      const selectedCount = ALL_MODULE_KEYS.filter(m => selectedByModule[m]).length;
+      const hasSelectedBatch = Boolean(selectedBatch);
+      const allowedModulesForBatch = hasSelectedBatch
+        ? ALL_MODULE_KEYS.filter(m => isBatchAllowedForModule(selectedBatch, m))
+        : [];
+      const usage = getStudentMobileUsage(mobileNumber);
+      const hasMobile = normalizeMobileKey(mobileNumber).length >= 11;
+      const weeklyLocked = hasMobile && hasBookedThisWeek(mobileNumber);
+      const winStatus = getBookingWindowStatus();
+
+      const windowBanner = !winStatus.enabled ? '' : winStatus.isOpen ? `
+        <div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:14px;padding:12px 14px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+          <div style="display:flex;align-items:flex-start;gap:8px;">
+            <span style="width:8px;height:8px;border-radius:9999px;background:#10b981;flex-shrink:0;margin-top:4px;"></span>
+            <div>
+              <p style="font-size:12px;font-weight:800;color:#065f46;">Booking Session Active</p>
+              <p style="font-size:11px;color:#047857;margin-top:2px;line-height:1.45;">
+                <strong>Start:</strong> ${escapeHtml(winStatus.startStr)}<br/>
+                <strong>Deadline:</strong> ${escapeHtml(winStatus.endStr)}
+              </p>
+            </div>
+          </div>
+          <span style="font-size:10px;font-weight:800;padding:3px 8px;border-radius:9999px;background:#d1fae5;color:#065f46;flex-shrink:0;">OPEN</span>
+        </div>
+      ` : `
+        <div style="background:#fff1f2;border:1px solid #fecdd3;border-radius:14px;padding:12px 14px;display:flex;align-items:flex-start;gap:10px;">
+          <span style="font-size:16px;line-height:1.2;">⏰</span>
+          <div>
+            <p style="font-size:12px;font-weight:800;color:#be123c;">Booking Currently Closed</p>
+            <p style="font-size:11px;color:#e11d48;margin-top:2px;line-height:1.45;">
+              <strong>Start:</strong> ${escapeHtml(winStatus.startStr)}<br/>
+              <strong>Deadline:</strong> ${escapeHtml(winStatus.endStr)}
+            </p>
+          </div>
+        </div>
+      `;
+
+      const identityCard = `
+        <section class="card">
+          <div>
+            <h2 class="section-kicker">1. Verified Student Account</h2>
+            <p class="helper-text">@${escapeHtml(acct.username)} • 1 booking/week • 4 attempts/module</p>
+          </div>
+
+          <div class="field-group">
+            <label for="student-name-input" class="field-label">Student Full Name (Linked)</label>
+            <input
+              id="student-name-input"
+              type="text"
+              value="${escapeHtml(studentName)}"
+              readonly
+              class="input"
+              style="background:#f1f5f9;color:#334155;font-weight:700;"
+            />
+          </div>
+
+          <div class="field-group">
+            <label for="student-mobile-input" class="field-label">Mobile Number (Linked)</label>
+            <input
+              id="student-mobile-input"
+              type="tel"
+              value="${escapeHtml(mobileNumber)}"
+              readonly
+              class="input"
+              style="background:#f1f5f9;color:#334155;font-weight:700;"
+            />
+            <div id="mobile-quota-preview">
+              ${renderMobileQuotaBreakdownHtml(mobileNumber)}
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="student-batch-select" class="field-label">Student Batch (Linked)</label>
+            <input
+              id="student-batch-select"
+              type="text"
+              value="Batch ${escapeHtml(selectedBatch)}"
+              readonly
+              class="input"
+              style="background:#f1f5f9;color:#0A6C82;font-weight:800;"
+            />
+          </div>
+        </section>
+      `;
+
+      let modulesBodyHtml = '';
+      if (!hasSelectedBatch) {
+        modulesBodyHtml = `
+          <div style="background:#ffffff;border-radius:16px;padding:24px 16px;border:1px dashed #cbd5e1;text-align:center;">
+            <p style="font-size:13px;font-weight:700;color:#334155;">No batch assigned to account</p>
+          </div>
+        `;
+      } else if (allowedModulesForBatch.length === 0) {
+        modulesBodyHtml = `
+          <div style="background:#ffffff;border-radius:16px;padding:24px 16px;border:1px dashed #fecdd3;text-align:center;">
+            <p style="font-size:13px;font-weight:700;color:#be123c;">No partial test modules are currently open for Batch ${escapeHtml(selectedBatch)}.</p>
+            <p class="helper-text" style="margin-top:4px;">Please check with your teacher.</p>
+          </div>
+        `;
+      } else {
+        modulesBodyHtml = allowedModulesForBatch.map(mod => {
+          const meta = MODULE_META[mod];
+          const activeSlots = appState.slots.filter(s => s.module === mod && s.active);
+          const pickedSlotId = selectedByModule[mod];
+          const usedCount = usage[mod] || 0;
+          const remainingCount = Math.max(0, MAX_PER_MODULE - usedCount);
+          const quotaExhausted = hasMobile && remainingCount === 0;
+
+          const byDay = {};
+          activeSlots.forEach(sl => {
+            if (!byDay[sl.day]) byDay[sl.day] = [];
+            byDay[sl.day].push(sl);
+          });
+
+          return `
+            <div class="card mod-${mod}">
+              <div class="module-header">
+                <div class="module-title-wrap">
+                  <div class="module-icon">
+                    ${meta.icon}
+                  </div>
+                  <div>
+                    <h3 style="font-size:14px;font-weight:700;color:#0f172a;">${mod}</h3>
+                    <p style="font-size:11px;color:#64748b;">${meta.subtitle}</p>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:4px;">
+                  ${hasMobile ? `
+                    <span style="padding:3px 8px;border-radius:9999px;font-size:10px;font-weight:700;background:${quotaExhausted ? '#ffe4e6' : '#f1f5f9'};color:${quotaExhausted ? '#be123c' : '#334155'};">
+                      ${remainingCount}/${MAX_PER_MODULE} left
+                    </span>
+                  ` : ''}
+                  ${pickedSlotId ? `<span style="padding:3px 8px;border-radius:9999px;font-size:10px;font-weight:700;background:#071419;color:#fff;">Selected</span>` : ''}
+                </div>
+              </div>
+
+              ${quotaExhausted ? `
+                <div style="padding:10px;border-radius:12px;background:#fff1f2;border:1px solid #fecdd3;text-align:center;">
+                  <p style="font-size:12px;font-weight:700;color:#be123c;">4/4 Limit Reached for ${mod}</p>
+                  <p style="font-size:11px;color:#e11d48;margin-top:2px;">This mobile number has already completed all 4 ${mod} tests.</p>
+                </div>
+              ` : activeSlots.length === 0 ? `
+                <p style="font-size:12px;color:#94a3b8;text-align:center;padding:8px;">No active slots right now.</p>
+              ` : Object.keys(byDay).map(day => `
+                <div style="display:flex;flex-direction:column;gap:6px;">
+                  <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#94a3b8;">${escapeHtml(day)}</p>
+                  <div style="display:flex;flex-direction:column;gap:6px;">
+                    ${byDay[day].map(slot => {
+                      const left = getSeatsLeft(slot);
+                      const isFull = left <= 0;
+                      const isPicked = pickedSlotId === slot.id;
+
+                      return `
+                        <button
+                          type="button"
+                          onclick="handleToggleSlot('${mod}', '${slot.id}')"
+                          ${(isFull && !isPicked) || !winStatus.isOpen ? 'disabled' : ''}
+                          class="slot-btn ${(isFull && !isPicked) || !winStatus.isOpen ? 'full' : isPicked ? `picked-${mod}` : ''}"
+                        >
+                          <div style="display:flex;align-items:center;gap:8px;">
+                            <span style="width:16px;height:16px;border-radius:9999px;border:2px solid ${isPicked ? '#071419' : '#cbd5e1'};background:${isPicked ? '#071419' : '#fff'};display:inline-flex;align-items:center;justify-content:center;">
+                              ${isPicked ? '<span style="width:6px;height:6px;border-radius:9999px;background:#fff;"></span>' : ''}
+                            </span>
+                            <span style="font-size:13px;font-weight:700;color:#0f172a;">${escapeHtml(slot.time)}</span>
+                          </div>
+
+                          ${isFull && !isPicked ? `
+                            <span class="seat-pill full">Full</span>
+                          ` : `
+                            <span class="seat-pill ${isPicked ? 'picked' : ''}">
+                              ${left}/${slot.capacity} left
+                            </span>
+                          `}
+                        </button>
+                      `;
+                    }).join('')}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        }).join('');
+      }
+
+      const modulesSection = `
+        <section style="display:flex;flex-direction:column;gap:12px;">
+          <div style="padding:0 2px;">
+            <h2 class="section-kicker">2. Choose Partial Test Slots</h2>
+            <p class="helper-text">${hasSelectedBatch ? `Showing modules allotted to Batch ${escapeHtml(selectedBatch)}` : ''}</p>
+          </div>
+          ${modulesBodyHtml}
+        </section>
+      `;
+
+      const submitSection = selectedCount === 0 || weeklyLocked || !winStatus.isOpen ? '' : `
+        <section class="card">
+          <button
+            type="button"
+            onclick="handleStudentSubmit(event)"
+            ${appState.isSubmitting ? 'disabled' : ''}
+            class="btn btn-teal btn-full"
+          >
+            ${appState.isSubmitting ? 'Booking Seats...' : `Confirm Booking (${selectedCount} Module${selectedCount === 1 ? '' : 's'})`}
+          </button>
+        </section>
+      `;
+
+      return studentTopNav + windowBanner + identityCard + modulesSection + submitSection;
+    }
+
+    function renderLoginView() {
+      return `
+        <section class="card" style="margin-top:16px;padding:24px 20px;">
+          <div style="text-align:center;">
+            <div style="width:44px;height:44px;border-radius:14px;background:#071419;color:#DDA73C;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:18px;">
+              🔒
+            </div>
+            <h2 style="font-size:16px;font-weight:700;color:#0f172a;">Management Portal Login</h2>
+            <p class="helper-text">Password is verified live against your Google Sheet Config tab</p>
+          </div>
+
+          <form onsubmit="handleAdminLogin(event)" style="display:flex;flex-direction:column;gap:12px;">
+            <input
+              id="admin-pw-input"
+              type="password"
+              placeholder="Enter management password"
+              autofocus
+              class="input"
+              style="text-align:center;font-weight:700;"
+            />
+            <button
+              id="admin-login-btn"
+              type="submit"
+              class="btn btn-dark btn-full"
+            >
+              Unlock Management Portal
+            </button>
+          </form>
+        </section>
+      `;
+    }
+
+    function renderAdminView() {
+      const totalBooked = appState.bookings.length;
+      const totalCap = appState.slots.filter(s => s.active).reduce((sum, s) => sum + s.capacity, 0);
+      const pendingAccounts = (appState.accounts || []).filter(
+        a => String(a.status || 'Approved').toLowerCase() === 'pending'
+      );
+
+      const topOverview = `
+        <section class="card-dark">
+          <div class="flex-between">
+            <div>
+              <span class="subbar-gold">Management Overview</span>
+              <h2 style="font-size:16px;font-weight:800;color:#fff;margin-top:2px;">${escapeHtml(appState.weekLabel)}</h2>
+            </div>
+            <button
+              type="button"
+              onclick="handleExportMultiSheetExcel()"
+              class="btn btn-emerald btn-sm"
+            >
+              📥 Export Excel
+            </button>
+          </div>
+
+          <div class="kpi-grid">
+            <div class="kpi-box">
+              <p style="font-size:10px;font-weight:700;color:#99f6e4;text-transform:uppercase;">This Week</p>
+              <p style="font-size:18px;font-weight:800;color:#fff;margin-top:2px;">${totalBooked}<span style="font-size:11px;font-weight:400;color:#94a3b8;">/${totalCap}</span></p>
+            </div>
+            <div class="kpi-box">
+              <p style="font-size:10px;font-weight:700;color:#99f6e4;text-transform:uppercase;">Pending QC</p>
+              <p style="font-size:18px;font-weight:800;color:${pendingAccounts.length > 0 ? '#fbbf24' : '#fff'};margin-top:2px;">${pendingAccounts.length}</p>
+            </div>
+            <div class="kpi-box">
+              <p style="font-size:10px;font-weight:700;color:#99f6e4;text-transform:uppercase;">Batches</p>
+              <p style="font-size:18px;font-weight:800;color:#DDA73C;margin-top:2px;">${appState.batches.length}</p>
+            </div>
+          </div>
+        </section>
+      `;
+
+      const tabs = `
+        <div class="tab-bar">
+          ${[
+            { id: 'roster', label: 'Roster' },
+            { id: 'approvals', label: pendingAccounts.length > 0 ? `QC (${pendingAccounts.length})` : 'QC' },
+            { id: 'slots', label: 'Slots' },
+            { id: 'batches', label: 'Batches' },
+            { id: 'settings', label: 'Settings' }
+          ].map(t => `
+            <button
+              type="button"
+              onclick="switchAdminTab('${t.id}')"
+              class="tab-btn ${appState.adminTab === t.id ? 'active' : ''}"
+            >
+              ${t.label}
+            </button>
+          `).join('')}
+        </div>
+      `;
+
+      if (appState.adminTab === 'approvals') {
+        const batchList = Array.from(new Set([
+          ...appState.batches,
+          ...pendingAccounts.map(a => a.batch).filter(Boolean)
+        ]));
+        const filteredPending = pendingAccounts.filter(a =>
+          appState.approvalBatchFilter === 'All' || a.batch === appState.approvalBatchFilter
+        );
+
+        return topOverview + tabs + `
+          <section class="card">
+            <div class="flex-between">
+              <div>
+                <h3 class="section-kicker">Batch-Wise Student Account QC</h3>
+                <p class="helper-text">Verify student identity & batch before approving portal access</p>
+              </div>
+              <span style="font-size:11px;font-weight:800;padding:3px 9px;border-radius:9999px;background:${filteredPending.length > 0 ? '#fffbeb' : '#ecfdf5'};color:${filteredPending.length > 0 ? '#b45309' : '#059669'};border:1px solid ${filteredPending.length > 0 ? '#fde68a' : '#a7f3d0'};">
+                ${filteredPending.length} Pending
+              </span>
+            </div>
+
+            <div class="field-group">
+              <label for="approval-batch-select" class="field-label">Filter Requests by Teacher's Batch</label>
+              <select
+                id="approval-batch-select"
+                onchange="appState.approvalBatchFilter = this.value; renderApp({ preserveScroll: true });"
+                class="select-sm"
+              >
+                <option value="All" ${appState.approvalBatchFilter === 'All' ? 'selected' : ''}>All Batches (${pendingAccounts.length} Pending)</option>
+                ${batchList.map(b => {
+                  const cnt = pendingAccounts.filter(a => a.batch === b).length;
+                  return `<option value="${escapeHtml(b)}" ${appState.approvalBatchFilter === b ? 'selected' : ''}>Batch ${escapeHtml(b)} (${cnt} Pending)</option>`;
+                }).join('')}
+              </select>
+            </div>
+
+            ${filteredPending.length === 0 ? `
+              <div style="padding:20px 12px;border-radius:12px;background:#f8fafc;border:1px dashed #cbd5e1;text-align:center;">
+                <p style="font-size:13px;font-weight:700;color:#334155;">No pending account requests</p>
+                <p class="helper-text">${appState.approvalBatchFilter === 'All' ? 'All student sign-ups have been reviewed.' : `No pending requests for Batch ${escapeHtml(appState.approvalBatchFilter)}.`}</p>
+              </div>
+            ` : `
+              <div style="display:flex;flex-direction:column;gap:10px;">
+                ${filteredPending.map(ac => `
+                  <div style="padding:12px;border-radius:12px;background:#fffbeb;border:1px solid #fde68a;display:flex;flex-direction:column;gap:8px;">
+                    <div class="flex-between">
+                      <div>
+                        <p style="font-size:13px;font-weight:800;color:#0f172a;">${escapeHtml(ac.fullName)}</p>
+                        <p style="font-size:11px;font-weight:700;color:#0A6C82;margin-top:2px;">Mobile: ${escapeHtml(ac.mobileNumber)}</p>
+                        <p style="font-size:11px;color:#475569;">Username: <strong>${escapeHtml(ac.username)}</strong> ${ac.createdAt ? `• ${formatTimestampShort(ac.createdAt)}` : ''}</p>
+                      </div>
+                      <span style="font-size:11px;font-weight:800;padding:4px 10px;border-radius:9999px;background:#071419;color:#DDA73C;">
+                        Batch ${escapeHtml(ac.batch)}
+                      </span>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-top:4px;">
+                      <button
+                        type="button"
+                        onclick="handleReviewAccount('${escapeHtml(ac.accountId)}', 'approve')"
+                        class="btn btn-emerald btn-sm"
+                      >
+                        ✓ Approve Account
+                      </button>
+                      <button
+                        type="button"
+                        onclick="handleReviewAccount('${escapeHtml(ac.accountId)}', 'reject')"
+                        class="btn btn-xs"
+                        style="background:#fff1f2;color:#be123c;border:1px solid #fecdd3;font-size:12px;"
+                      >
+                        ✕ Reject
+                      </button>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            `}
+          </section>
+        `;
+      }
+
+      if (appState.adminTab === 'roster') {
+        return topOverview + tabs + `
+          <section class="card">
+            <div class="grid-2">
+              <select
+                onchange="appState.rosterModuleFilter = this.value; updateRosterListDOM();"
+                class="select-sm"
+              >
+                <option value="All" ${appState.rosterModuleFilter === 'All' ? 'selected' : ''}>All Modules (${appState.bookings.length})</option>
+                ${ALL_MODULE_KEYS.map(m => `<option value="${m}" ${appState.rosterModuleFilter === m ? 'selected' : ''}>${m}</option>`).join('')}
+              </select>
+              <input
+                type="text"
+                value="${escapeHtml(appState.rosterSearch)}"
+                oninput="appState.rosterSearch = this.value; updateRosterListDOM();"
+                placeholder="Search name or mobile..."
+                class="input-sm"
+              />
+            </div>
+
+            <div id="roster-bookings-list">
+              ${renderRosterBookingsListHtml()}
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="flex-between">
+              <div>
+                <h3 class="section-kicker">Student Accounts Recovery (${(appState.accounts || []).length})</h3>
+                <p class="helper-text">Search by mobile number to recover forgotten username/password</p>
+              </div>
+            </div>
+
+            <input
+              type="text"
+              value="${escapeHtml(appState.accountSearch)}"
+              oninput="appState.accountSearch = this.value; updateAccountsListDOM();"
+              placeholder="Search mobile number, username, or name..."
+              class="input-sm"
+            />
+
+            <div id="accounts-recovery-list">
+              ${renderAccountsRecoveryListHtml()}
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="flex-between">
+              <h3 class="section-kicker">Archive Quota Ledger (4/Module)</h3>
+              <span style="font-size:11px;font-weight:700;color:#0A6C82;">Max 16 Total</span>
+            </div>
+            ${renderArchiveQuotaLedgerHtml()}
+          </section>
+        `;
+      }
+
+      if (appState.adminTab === 'slots') {
+        return topOverview + tabs + `
+          <section class="card">
+            <div class="flex-between">
+              <h3 class="section-kicker">Configure Test Slots</h3>
+              <button
+                type="button"
+                onclick="handleAddDraftSlot()"
+                class="btn btn-xs"
+                style="background:#f0fdfa;color:#0A6C82;border:1px solid #99f6e4;"
+              >
+                + Add Slot
+              </button>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              ${appState.draftSlots.map((sl, idx) => `
+                <div style="padding:12px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;display:flex;flex-direction:column;gap:8px;">
+                  <div class="grid-2">
+                    <select
+                      onchange="handleDraftSlotChange(${idx}, 'module', this.value)"
+                      class="select-sm"
+                    >
+                      ${ALL_MODULE_KEYS.map(m => `<option value="${m}" ${sl.module === m ? 'selected' : ''}>${m}</option>`).join('')}
+                    </select>
+                    <input
+                      type="text"
+                      value="${escapeHtml(sl.day)}"
+                      oninput="handleDraftSlotChange(${idx}, 'day', this.value)"
+                      placeholder="Day (e.g., Monday)"
+                      class="input-sm"
+                    />
+                  </div>
+                  <div class="grid-3">
+                    <input
+                      type="text"
+                      value="${escapeHtml(sl.time)}"
+                      oninput="handleDraftSlotChange(${idx}, 'time', this.value)"
+                      placeholder="Time range"
+                      class="input-sm"
+                    />
+                    <input
+                      type="number"
+                      min="1"
+                      value="${sl.capacity}"
+                      oninput="handleDraftSlotChange(${idx}, 'capacity', this.value)"
+                      placeholder="Seats"
+                      class="input-sm"
+                    />
+                  </div>
+                  <div class="flex-between" style="padding-top:4px;">
+                    <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#475569;cursor:pointer;">
+                      <input
+                        type="checkbox"
+                        ${sl.active ? 'checked' : ''}
+                        onchange="handleDraftSlotChange(${idx}, 'active', this.checked)"
+                      />
+                      Active
+                    </label>
+                    <button
+                      type="button"
+                      onclick="handleDeleteDraftSlot(${idx})"
+                      style="border:none;background:none;font-size:11px;font-weight:700;color:#e11d48;cursor:pointer;"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+
+            <button
+              type="button"
+              onclick="handleSaveAllSlots()"
+              class="btn btn-teal btn-full"
+            >
+              Save All Slots
+            </button>
+          </section>
+        `;
+      }
+
+      if (appState.adminTab === 'batches') {
+        return topOverview + tabs + `
+          <section class="card">
+            <h3 class="section-kicker">Active Student Batches</h3>
+
+            <div style="display:flex;gap:8px;">
+              <input
+                id="new-batch-input"
+                type="text"
+                placeholder="New batch (e.g., 211)"
+                class="input"
+              />
+              <button
+                type="button"
+                onclick="handleAddDraftBatch()"
+                class="btn btn-dark"
+              >
+                Add
+              </button>
+            </div>
+
+            <div class="flex-wrap">
+              ${appState.draftBatches.map(b => `
+                <span class="chip-batch">
+                  <span>${escapeHtml(b)}</span>
+                  <button
+                    type="button"
+                    onclick="handleRemoveDraftBatch('${escapeHtml(b)}')"
+                    style="border:none;background:none;color:#f43f5e;font-weight:800;cursor:pointer;"
+                  >
+                    ×
+                  </button>
+                </span>
+              `).join('')}
+            </div>
+
+            <div style="border-top:1px solid #e2e8f0;padding-top:12px;display:flex;flex-direction:column;gap:10px;">
+              <div>
+                <h4 class="section-kicker">Module → Allowed Batches</h4>
+                <p class="helper-text">Tap batches below each module to allow or block booking access</p>
+              </div>
+
+              ${ALL_MODULE_KEYS.map(mod => {
+                const allowed = appState.draftModuleBatches[mod] || [];
+                return `
+                  <div style="padding:12px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;display:flex;flex-direction:column;gap:8px;">
+                    <div class="flex-between">
+                      <span style="font-size:12px;font-weight:700;color:#0f172a;">${mod} <span style="font-weight:500;color:#64748b;">(${allowed.length}/${appState.draftBatches.length})</span></span>
+                      <div style="display:flex;gap:8px;">
+                        <button type="button" onclick="handleSetAllBatchesForModule('${mod}', true)" style="border:none;background:none;font-size:10px;font-weight:700;color:#0A6C82;cursor:pointer;">All</button>
+                        <button type="button" onclick="handleSetAllBatchesForModule('${mod}', false)" style="border:none;background:none;font-size:10px;font-weight:700;color:#94a3b8;cursor:pointer;">None</button>
+                      </div>
+                    </div>
+                    <div class="flex-wrap">
+                      ${appState.draftBatches.map(b => {
+                        const isAllowed = allowed.includes(b);
+                        return `
+                          <button
+                            type="button"
+                            onclick="handleToggleModuleBatch('${mod}', '${escapeHtml(b)}')"
+                            class="chip-toggle ${isAllowed ? 'on' : ''}"
+                          >
+                            ${isAllowed ? '✓ ' : ''}${escapeHtml(b)}
+                          </button>
+                        `;
+                      }).join('')}
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+
+            <button
+              type="button"
+              onclick="handleSaveBatches()"
+              class="btn btn-teal btn-full"
+            >
+              Save Batches & Module Access
+            </button>
+          </section>
+        `;
+      }
+
+      // Settings Tab
+      const win = normalizeBookingWindow(appState.bookingWindow);
+      const startDayLabel = formatDateWithDay(win.startDate);
+      const endDayLabel = formatDateWithDay(win.endDate);
+      return topOverview + tabs + `
+        <section class="card">
+          <div class="flex-between">
+            <div>
+              <h3 class="section-kicker">Booking Timeline Window</h3>
+              <p class="helper-text">Set exact Start & End Day, Date, and Time (Asia/Dhaka)</p>
+            </div>
+            <span style="font-size:10px;font-weight:800;padding:3px 8px;border-radius:9999px;background:${win.enabled ? '#f0fdfa' : '#f1f5f9'};color:${win.enabled ? '#0A6C82' : '#64748b'};border:1px solid ${win.enabled ? '#99f6e4' : '#cbd5e1'};">
+              ${win.enabled ? 'Active' : '24/7 Open'}
+            </span>
+          </div>
+
+          <form onsubmit="handleSaveBookingWindow(event)" style="display:flex;flex-direction:column;gap:10px;">
+            <label style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:#1e293b;cursor:pointer;">
+              <input
+                id="settings-window-enabled"
+                type="checkbox"
+                ${win.enabled ? 'checked' : ''}
+              />
+              Enforce Booking Start & End Date/Time Window
+            </label>
+
+            <div style="padding:10px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;display:flex;flex-direction:column;gap:8px;">
+              <div class="flex-between">
+                <span style="font-size:11px;font-weight:700;color:#0A6C82;">1. Start Day, Date & Time</span>
+                <span id="preview-start-day" style="font-size:10px;font-weight:700;color:#475569;">${escapeHtml(startDayLabel)}</span>
+              </div>
+              <div class="grid-2">
+                <div class="field-group">
+                  <label class="field-label">Start Date</label>
+                  <input
+                    id="settings-window-start-date"
+                    type="date"
+                    value="${escapeHtml(win.startDate)}"
+                    onchange="const el=document.getElementById('preview-start-day'); if(el) el.textContent=formatDateWithDay(this.value);"
+                    class="input-sm"
+                  />
+                </div>
+                <div class="field-group">
+                  <label class="field-label">Start Time</label>
+                  <input
+                    id="settings-window-start-time"
+                    type="time"
+                    value="${escapeHtml(win.startTime)}"
+                    class="input-sm"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div style="padding:10px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;display:flex;flex-direction:column;gap:8px;">
+              <div class="flex-between">
+                <span style="font-size:11px;font-weight:700;color:#be123c;">2. End Day, Date & Time</span>
+                <span id="preview-end-day" style="font-size:10px;font-weight:700;color:#475569;">${escapeHtml(endDayLabel)}</span>
+              </div>
+              <div class="grid-2">
+                <div class="field-group">
+                  <label class="field-label">End Date</label>
+                  <input
+                    id="settings-window-end-date"
+                    type="date"
+                    value="${escapeHtml(win.endDate)}"
+                    onchange="const el=document.getElementById('preview-end-day'); if(el) el.textContent=formatDateWithDay(this.value);"
+                    class="input-sm"
+                  />
+                </div>
+                <div class="field-group">
+                  <label class="field-label">End Time</label>
+                  <input
+                    id="settings-window-end-time"
+                    type="time"
+                    value="${escapeHtml(win.endTime)}"
+                    class="input-sm"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-teal btn-full">
+              Save Booking Timeline
+            </button>
+          </form>
+        </section>
+
+        <section class="card">
+          <h3 class="section-kicker">Archive & Reset Week</h3>
+          <p class="helper-text">Moves current bookings to Archive (preserving 4-per-module mobile quotas), resets seats, and restores module access for all batches.</p>
+          <input
+            id="new-week-label-input"
+            type="text"
+            placeholder="New Week Label (e.g., Week 12 - Nov)"
+            class="input"
+          />
+          <button
+            type="button"
+            onclick="requestStartNewWeek()"
+            class="btn btn-rose btn-full"
+          >
+            Archive & Reset Week
+          </button>
+        </section>
+
+        <section class="card">
+          <h3 class="section-kicker">Change Management Password</h3>
+          <form onsubmit="handleChangePassword(event)" style="display:flex;gap:8px;">
+            <input
+              id="new-admin-pw-input"
+              type="password"
+              placeholder="New password (min 4 chars)"
+              class="input"
+            />
+            <button type="submit" class="btn btn-dark">Update</button>
+          </form>
+        </section>
+
+        <section class="card">
+          <h3 class="section-kicker">Google Sheet & Brand Logo</h3>
+          <div class="field-group">
+            <label class="field-label">Apps Script Web App URL</label>
+            <input
+              id="settings-script-url"
+              type="url"
+              value="${escapeHtml(appState.scriptUrl)}"
+              placeholder="https://script.google.com/macros/s/.../exec"
+              class="input"
+              style="font-size:12px;"
+            />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Brand Logo URL</label>
+            <input
+              id="settings-logo-url"
+              type="text"
+              value="${escapeHtml(getCustomLogo() || DEFAULT_LOGO_PATH)}"
+              placeholder="Google Drive share link or image URL"
+              class="input"
+              style="font-size:12px;"
+            />
+          </div>
+          <button
+            type="button"
+            onclick="handleSaveConnectionAndLogo()"
+            class="btn btn-teal btn-full"
+          >
+            Save Connection & Logo
+          </button>
+        </section>
+      `;
+    }
+
+    /*************************************************************************
+     * 11. ROSTER PARTIAL UPDATERS & MASTER RENDER
+     *************************************************************************/
+    function renderRosterBookingsListHtml() {
+      const q = appState.rosterSearch.trim().toLowerCase();
+      const filtered = appState.bookings.filter(b => {
+        if (appState.rosterModuleFilter !== 'All' && b.module !== appState.rosterModuleFilter) return false;
+        if (q && !b.studentName.toLowerCase().includes(q) && !b.batch.toLowerCase().includes(q) && !(b.mobileNumber || '').toLowerCase().includes(q)) return false;
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        return `<p style="font-size:12px;color:#94a3b8;text-align:center;padding:16px;">No bookings found.</p>`;
+      }
+
+      return `
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          ${filtered.map(b => `
+            <div class="list-item">
+              <div>
+                <p style="font-size:13px;font-weight:700;color:#0f172a;">${escapeHtml(b.studentName)} <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:#e2e8f0;color:#334155;">Batch ${escapeHtml(b.batch)}</span></p>
+                <p style="font-size:11px;color:#0A6C82;font-weight:600;">${escapeHtml(b.mobileNumber || 'No Mobile')}</p>
+                <p style="font-size:11px;color:#64748b;">${escapeHtml(b.module)} • ${escapeHtml(b.day)} (${escapeHtml(b.time)})</p>
+              </div>
+              <button
+                type="button"
+                onclick="requestDeleteBooking('${b.bookingId}')"
+                class="btn btn-xs"
+                style="background:#fff1f2;color:#e11d48;"
+              >
+                Remove
+              </button>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function renderAccountsRecoveryListHtml() {
+      const accQ = appState.accountSearch.trim().toLowerCase();
+      const filteredAccounts = (appState.accounts || []).filter(ac => {
+        if (!accQ) return true;
+        return (
+          String(ac.mobileNumber || '').toLowerCase().includes(accQ) ||
+          String(ac.username || '').toLowerCase().includes(accQ) ||
+          String(ac.fullName || '').toLowerCase().includes(accQ) ||
+          String(ac.batch || '').toLowerCase().includes(accQ)
+        );
+      });
+
+      if (filteredAccounts.length === 0) {
+        return `<p style="font-size:12px;color:#94a3b8;text-align:center;padding:8px;">No student accounts match your search.</p>`;
+      }
+
+      return `
+        <div style="display:flex;flex-direction:column;gap:8px;max-height:220px;overflow-y:auto;">
+          ${filteredAccounts.map(ac => {
+            const isPending = String(ac.status || 'Approved').toLowerCase() === 'pending';
+            return `
+            <div style="padding:10px;border-radius:12px;background:#f8fafc;border:1px solid ${isPending ? '#fde68a' : '#e2e8f0'};font-size:11px;display:flex;flex-direction:column;gap:4px;">
+              <div class="flex-between">
+                <span style="font-weight:700;color:#0f172a;">${escapeHtml(ac.fullName)} <span style="font-size:10px;padding:1px 6px;border-radius:4px;background:#e2e8f0;">Batch ${escapeHtml(ac.batch)}</span> <span style="font-size:9px;padding:1px 6px;border-radius:9999px;font-weight:800;background:${isPending ? '#fef3c7' : '#d1fae5'};color:${isPending ? '#b45309' : '#065f46'};">${isPending ? 'Pending QC' : 'Approved'}</span></span>
+                <span style="font-weight:700;color:#0A6C82;">${escapeHtml(ac.mobileNumber)}</span>
+              </div>
+              <div class="flex-between" style="background:#ffffff;padding:6px 8px;border-radius:8px;border:1px solid #e2e8f0;">
+                <span>User: <strong style="color:#0f172a;">${escapeHtml(ac.username)}</strong></span>
+                <span>Pass: <strong style="color:#be123c;">${escapeHtml(ac.password || '••••')}</strong></span>
+              </div>
+            </div>
+          `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    function renderArchiveQuotaLedgerHtml() {
+      const quotaMap = computeMobileQuotaMap(appState.archive, appState.bookings);
+      const quotaList = Object.values(quotaMap).sort((a, b) => b.totalUsed - a.totalUsed);
+
+      if (quotaList.length === 0) {
+        return `<p style="font-size:12px;color:#94a3b8;text-align:center;padding:8px;">No student mobile history recorded yet.</p>`;
+      }
+
+      return `
+        <div style="display:flex;flex-direction:column;gap:8px;max-height:240px;overflow-y:auto;">
+          ${quotaList.map(item => `
+            <div style="padding:10px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;font-size:11px;">
+              <div class="flex-between" style="margin-bottom:6px;">
+                <span style="font-weight:700;color:#0f172a;">${escapeHtml(item.mobileDisplay || item.mobileKey)} ${item.studentName ? `• ${escapeHtml(item.studentName)}` : ''}</span>
+                <span style="font-weight:700;color:#0A6C82;">${item.totalUsed}/16</span>
+              </div>
+              <div class="quota-grid">
+                ${ALL_MODULE_KEYS.map(m => {
+                  const used = item[m] || 0;
+                  return `<span style="padding:2px 4px;border-radius:6px;text-align:center;font-weight:700;background:${used >= MAX_PER_MODULE ? '#ffe4e6' : '#fff'};color:${used >= MAX_PER_MODULE ? '#be123c' : '#475569'};border:1px solid #e2e8f0;">${m[0]}: ${used}/4</span>`;
+                }).join('')}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function updateRosterListDOM() {
+      const el = document.getElementById('roster-bookings-list');
+      if (el) el.innerHTML = renderRosterBookingsListHtml();
+    }
+
+    function updateAccountsListDOM() {
+      const el = document.getElementById('accounts-recovery-list');
+      if (el) el.innerHTML = renderAccountsRecoveryListHtml();
+    }
+
+    function renderApp({ preserveScroll = false } = {}) {
+      const main = document.getElementById('main-content');
+      const prevScroll = preserveScroll && main ? main.scrollTop : 0;
+
+      updateHeaderChrome();
+
+      if (appState.view === 'student') {
+        main.innerHTML = renderStudentView();
+      } else if (appState.view === 'login') {
+        main.innerHTML = renderLoginView();
+      } else {
+        main.innerHTML = renderAdminView();
+      }
+
+      if (preserveScroll && main) {
+        main.scrollTop = prevScroll;
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderBrandLogo();
+      syncAllData({ silent: true });
+    });
+  </script>
+</body>
+</html>
